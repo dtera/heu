@@ -6,7 +6,7 @@
 #ifndef ENABLE_IPCL
 
 #ifdef __x86_64__
-#define ENABLE_IPCL true
+#define ENABLE_IPCL false
 #else
 // IPCL do not support MAC(ARM) architecture
 #define ENABLE_IPCL false
