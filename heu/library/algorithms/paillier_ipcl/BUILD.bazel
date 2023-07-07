@@ -39,6 +39,7 @@ yacl_cc_library(
     ],
     target_compatible_with = [
         "@platforms//cpu:x86_64",
+        "@platforms//os:windows",
     ],
     deps = [
         "//heu/library/algorithms/util",
@@ -56,6 +57,7 @@ yacl_cc_test(
     srcs = ["ipcl_test.cc"],
     target_compatible_with = [
         "@platforms//cpu:x86_64",
+        "@platforms//os:windows",
     ],
     deps = [
         ":paillier_ipcl",
