@@ -23,7 +23,7 @@ if [ "$(uname)" == "Darwin" ]; then
   LINK_T=static    # dynamic static
 
   for module in algorithms phe numpy; do
-    out_path="$LIB_OUT_DIR"/libheu-"$module"."${OUT_LIB_SUFFIX}"
+    out_path="$LIB_OUT_DIR"/libphe-"$module"."${OUT_LIB_SUFFIX}"
     # shellcheck disable=SC2038
     [ -e "$out_path" ] || find "$LIB_DIR/$module" -name "*.${LIB_SUFFIX}" | xargs libtool -"$LINK_T" -o "$out_path"
   done
@@ -37,7 +37,7 @@ if [ "$(uname)" == "Darwin" ]; then
     [ -e "$out_path" ] || find "$EXT_LIB_DIR"/"$m_path" -name "*.${LIB_SUFFIX}" | xargs libtool -"$LINK_T" -o "$out_path"
   done
 
-  out_path="$LIB_OUT_DIR"/libheu."${OUT_LIB_SUFFIX}"
+  out_path="$LIB_OUT_DIR"/libphe."${OUT_LIB_SUFFIX}"
   # shellcheck disable=SC2038
   [ -e "$out_path" ] || find "$LIB_OUT_DIR" -name "*.${OUT_LIB_SUFFIX}" | xargs libtool -"$LINK_T" -o "$out_path"
 elif [ "$(uname)" == "Linux" ]; then
