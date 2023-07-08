@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -e
 
 CD=$(cd "$(dirname "$0")" || exit && pwd)
 WD=$(cd "$(dirname "$CD")" || exit && pwd)
