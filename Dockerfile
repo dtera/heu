@@ -5,6 +5,6 @@ RUN yum update -y && yum install cmake3 ninja-build -y
 RUN cd /usr/bin && ln -s cmake3 cmake && cd -
 RUN cd / && git clone https://github.com/dtera/heu.git && cd /heu
 WORKDIR /heu
-RUN /heu/bin/init.sh build
+RUN ./bin/init.sh build
 RUN mkdir ~/heu && ln -s lib ~/heu/lib && ln -s include ~/heu/include
 VOLUME ~/heu

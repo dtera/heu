@@ -42,7 +42,7 @@ if [ "$(uname)" == "Darwin" ]; then
   [ -e "$out_path" ] || find "$LIB_OUT_DIR" -name "*.${OUT_LIB_SUFFIX}" | xargs libtool -"$LINK_T" -o "$out_path"
 elif [ "$(uname)" == "Linux" ]; then
   echo "Linux"
-  cp bazel-bin/heu/library/phe/libphe.so lib/
+  [ -f bazel-bin/heu/library/phe/libphe.so ] && cp bazel-bin/heu/library/phe/libphe.so lib/
 else
   echo "Windows"
 fi
