@@ -25,7 +25,7 @@ if [ "$(uname)" == "Darwin" ]; then
   for module in algorithms phe numpy; do
     out_path="$LIB_OUT_DIR"/libphe-"$module"."${OUT_LIB_SUFFIX}"
     # shellcheck disable=SC2038
-    [ -e "$out_path" ] || find "$LIB_DIR/$module" -name "*.${LIB_SUFFIX}" | xargs libtool -"$LINK_T" -o "$out_path"
+    [ -e "$out_path" ] || find "$LIB_DIR/$module" -name "*_all.${LIB_SUFFIX}" | xargs -I{} cp {} "$LIB_OUT_DIR" # xargs libtool -"$LINK_T" -o "$out_path"
   done
 
   #com_github_gflags_gflags com_github_google_benchmark
@@ -42,7 +42,10 @@ if [ "$(uname)" == "Darwin" ]; then
   [ -e "$out_path" ] || find "$LIB_OUT_DIR" -name "*.${OUT_LIB_SUFFIX}" | xargs libtool -"$LINK_T" -o "$out_path"
 elif [ "$(uname)" == "Linux" ]; then
   echo "Linux"
-  [ -f bazel-bin/heu/library/phe/libphe.so ] && cp bazel-bin/heu/library/phe/libphe.so lib/
+  for module in algorithms phe numpy; do
+    # shellcheck disable=SC2038
+    find "$LIB_DIR/$module" -name "*_all.${LIB_SUFFIX}" | xargs -I{} cp {} "$LIB_OUT_DIR"
+  done
 else
   echo "Windows"
 fi
