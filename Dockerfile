@@ -6,5 +6,5 @@ RUN cd /usr/bin && ln -s cmake3 cmake && cd -
 RUN cd / && git clone https://github.com/dtera/heu.git && cd /heu
 WORKDIR /heu
 RUN ./bin/init.sh build
-RUN mkdir ~/heu && ln -s lib ~/heu/lib && ln -s include ~/heu/include
-VOLUME ~/heu
+RUN mkdir /root/heu && ln -s lib /root/heu/lib && ln -s include /root/heu/include
+VOLUME /root/heu
