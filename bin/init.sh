@@ -12,9 +12,9 @@ BAZEL_DIR="$WD/bazel-bin"
 LIB_DIR="$BAZEL_DIR/heu/library"
 EXT_LIB_DIR="$BAZEL_DIR/external"
 LIB_OUT_DIR="$WD/lib"
-INCLUDE_OUT_DIR="$WD/include"
+#INCLUDE_OUT_DIR="$WD/include"
 # shellcheck disable=SC2015
-[ -d "$LIB_OUT_DIR" ] && [ -d "$INCLUDE_OUT_DIR" ] || mkdir "$LIB_OUT_DIR" "$INCLUDE_OUT_DIR"
+[ -d "$LIB_OUT_DIR" ] || mkdir "$LIB_OUT_DIR"
 
 if [ "$(uname)" == "Darwin" ]; then
   echo "MacOS"
