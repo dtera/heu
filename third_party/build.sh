@@ -8,3 +8,6 @@ cd "$CD" || exit
 
 # build fmt
 "$CD"/build_fmt.sh
+
+# build tommath
+"$CD"/build_tommath.sh
