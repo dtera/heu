@@ -37,9 +37,10 @@ if [ "$(uname)" == "Darwin" ]; then
     [ -e "$out_path" ] || find "$EXT_LIB_DIR"/"$m_path" -name "*.${LIB_SUFFIX}" | xargs libtool -"$LINK_T" -o "$out_path"
   done
 
-  out_path="$LIB_OUT_DIR"/libphe."${OUT_LIB_SUFFIX}"
+  out_path="$LIB_OUT_DIR"/libphe_all."${OUT_LIB_SUFFIX}"
+  [ -e "$out_path" ] && mv "$out_path" "$LIB_OUT_DIR"/libphe_all__."${OUT_LIB_SUFFIX}"
   # shellcheck disable=SC2038
-  [ -e "$out_path" ] || find "$LIB_OUT_DIR" -name "*.${OUT_LIB_SUFFIX}" | xargs libtool -"$LINK_T" -o "$out_path"
+  find "$LIB_OUT_DIR" -name "*.${OUT_LIB_SUFFIX}" | xargs libtool -"$LINK_T" -o "$out_path"
 elif [ "$(uname)" == "Linux" ]; then
   echo "Linux"
   LIB_SUFFIX=so
