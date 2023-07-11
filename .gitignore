@@ -33,6 +33,9 @@ dist/
 pylib.name
 *.whl
 *.egg-info/
+cmake-build-*
+/third_party/include/
+/third_party/lib/
 
 cmake-build-*
 /third_party/include/
