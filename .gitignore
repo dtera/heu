@@ -32,3 +32,6 @@ build/
 dist/
 
 *.egg-info/
+cmake-build-*
+/third_party/include/
+/third_party/lib/

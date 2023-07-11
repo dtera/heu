@@ -2,12 +2,8 @@
 
 CD=$(cd "$(dirname "$0")" || exit && pwd)
 cd "$CD" || exit
+echo "Current Directory: $CD"
 
-# build absl
-"$CD"/build_absl.sh
-
-# build fmt
-"$CD"/build_fmt.sh
-
-# build tommath
-"$CD"/build_tommath.sh
+rm -rf include/* lib/*
+# build yacl
+"$CD"/build_yacl.sh
