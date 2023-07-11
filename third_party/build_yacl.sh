@@ -8,6 +8,8 @@ echo "Current Directory: $CD"
 # [ -d yacl ] || https://github.com/dtera/yacl.git
 pkg=yacl
 rm -rf "$pkg" && tar xvf "$pkg".tar.gz && "$pkg"/third_party/build.sh
+[ -d "$CD"/lib ] || mkdir -p "$CD"/lib
+[ -d "$CD"/include ] || mkdir -p "$CD"/include
 if [ "$(uname)" == "Darwin" ]; then
   cp -R "$CD"/$pkg/third_party/lib/* "$CD"/lib/
 else
