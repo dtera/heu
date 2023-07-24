@@ -13,6 +13,14 @@ list(REMOVE_ITEM SRCS ${TEST_SRCS} ${BENCH_SRCS} ${IPCL_SRCS} ${NP_SRCS})
 list(REMOVE_ITEM TEST_SRCS ${IPCL_SRCS} ${NP_SRCS})
 list(REMOVE_ITEM BENCH_SRCS ${IPCL_SRCS} ${NP_SRCS})
 
+find_package(OpenMP)
+if (OPENMP_FOUND)
+    message("OpenMP Found")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    add_definitions(-DWITH_OPENMP)
+endif ()
+
 # include directories and link libraries
 include_directories(. third_party/include)
 link_directories(third_party/lib)
