@@ -21,7 +21,7 @@ namespace heu::lib::phe::test {
 
 class EvaluatorTest : public ::testing::TestWithParam<SchemaType> {
  protected:
-  HeKit he_kit_ = HeKit(GetParam(), 2048);
+  HeKit he_kit_ = HeKit(GetParam());
   PlainEncoder edr = he_kit_.GetEncoder<PlainEncoder>(1);
 };
 
@@ -46,6 +46,10 @@ TEST_P(EvaluatorTest, Evaluate) {
 
   ct1 = evaluator->Add(ct0, edr.Encode((345)));
   EXPECT_EQ(decryptor->Decrypt(ct1).GetValue<int64_t>(), -12345 + 345);
+
+  if (he_kit_.GetPublicKey()->PlaintextBound().BitCount() < 64) {
+    GTEST_SKIP() << fmt::format("skip {}", GetParam());
+  }
 
   // ADD - int64
   auto encoder = PlainEncoder(GetParam(), std::numeric_limits<int64_t>::max());
@@ -79,6 +83,10 @@ TEST_P(EvaluatorTest, Evaluate) {
 
   ct1 = evaluator->Mul(ct0, edr.Encode((2)));
   EXPECT_EQ(decryptor->Decrypt(ct1).GetValue<int64_t>(), -12345 * 2);
+
+  if (GetParam() == SchemaType::DGK) {
+    GTEST_SKIP() << "Plaintext range is not enough, Skip DGK";
+  }
 
   ct1 = evaluator->Mul(ct0, edr.Encode((10)));
   EXPECT_EQ(decryptor->Decrypt(ct1).GetValue<int64_t>(), -12345 * 10);
@@ -122,6 +130,9 @@ TEST_P(EvaluatorTest, EvaluateInplace) {
   pt0 -= edr.Encode(852);
   EXPECT_EQ(decryptor->Decrypt(ct0), pt0);
 
+  if (GetParam() == SchemaType::DGK) {
+    GTEST_SKIP() << "Plaintext range is not enough, Skip DGK";
+  }
   // MUL //
   evaluator->MulInplace(&ct0, edr.Encode(10));
   pt0 *= edr.Encode(10);

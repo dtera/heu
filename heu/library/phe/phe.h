@@ -16,10 +16,10 @@
 
 #include <utility>
 
+#include "heu/library/phe/base/key_def.h"
 #include "heu/library/phe/decryptor.h"
 #include "heu/library/phe/encryptor.h"
 #include "heu/library/phe/evaluator.h"
-#include "heu/library/phe/key_def.h"
 
 namespace heu::lib::phe {
 
@@ -60,6 +60,7 @@ class HeKitSecretBase : public HeKitPublicBase {
 class HeKit : public HeKitSecretBase {
  public:
   HeKit(SchemaType schema_type, size_t key_size);
+  explicit HeKit(SchemaType schema_type);
 
   HeKit(yacl::ByteContainerView pk_buffer, yacl::ByteContainerView sk_buffer);
 

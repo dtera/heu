@@ -45,6 +45,7 @@ class SerializableVariant {
  public:
   template <typename T, std::enable_if_t<type_in_v<T, Types...>, int> = 0>
   explicit SerializableVariant(T &&value) : var_(std::forward<T>(value)) {}
+
   explicit SerializableVariant(SchemaType schema_type);
 
   SerializableVariant() noexcept = default;
@@ -63,6 +64,7 @@ class SerializableVariant {
   }
 
   bool IsCompatible(SchemaType schema_type) const;
+
   template <class T>
   bool IsHoldType() const {
     return std::holds_alternative<T>(var_);
@@ -119,7 +121,7 @@ class SerializableVariant {
     return var_ != other.var_;
   }
 
-  [[nodiscard]] yacl::Buffer Serialize() const;
+  [[nodiscard]] yacl::Buffer Serialize(bool with_meta = false) const;
   void Deserialize(yacl::ByteContainerView clazz);
   [[nodiscard]] std::string ToString() const;
 
@@ -137,5 +139,10 @@ class SerializableVariant {
 
 using MPInt = algorithms::MPInt;
 using Ciphertext = SerializableVariant<HE_NAMESPACE_LIST(Ciphertext)>;
+
+template <typename... Types>
+inline auto format_as(const SerializableVariant<Types...> &i) {
+  return fmt::streamed(i);
+}
 
 }  // namespace heu::lib::phe
