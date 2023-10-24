@@ -6,6 +6,8 @@ set(CMAKE_CXX_STANDARD 17)
 
 file(GLOB_RECURSE SRCS ${PROJECT_NAME}/library/*.cpp ${PROJECT_NAME}/library/*.cc)
 file(GLOB_RECURSE IPCL_SRCS ${PROJECT_NAME}/library/algorithms/paillier_ipcl/*.cc)
+#file(GLOB_RECURSE DGK_SRCS ${PROJECT_NAME}/library/algorithms/dgk/*.cc)
+#file(GLOB_RECURSE DJ_SRCS ${PROJECT_NAME}/library/algorithms/dj/*.cc)
 file(GLOB_RECURSE NP_SRCS ${PROJECT_NAME}/library/numpy/*.cc)
 file(GLOB_RECURSE TEST_SRCS ${PROJECT_NAME}/library/*_test.cc)
 file(GLOB_RECURSE BENCH_SRCS ${PROJECT_NAME}/library/*_bench.cc)
@@ -34,10 +36,12 @@ if (APPLE)
     list(APPEND EXTRA_LIB benchmark::benchmark gflags)
 endif ()
 
+set(ABSL_LIB absl_int128 absl_strings absl_symbolize absl_stacktrace absl_throw_delegate)
 # link libraries for the target
 add_library(${PROJECT_NAME} SHARED ${SRCS})
 #target_sources(${PROJECT_NAME} PRIVATE)
-target_link_libraries(${PROJECT_NAME} yacl absl_int128 absl_strings absl_symbolize absl_stacktrace tommath fmt)
+target_link_libraries(${PROJECT_NAME} yacl ${ABSL_LIB} # protobuf::libprotobuf protobuf::libprotobuf-lite
+        tommath fmt ssl crypto blake3 sodium curve25519)
 set(EXE_TARGETS)
 
 # Building tests

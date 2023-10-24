@@ -52,6 +52,7 @@ void KeyGenerator::Generate(const yacl::crypto::CurveName &curve_name,
 }
 
 void KeyGenerator::Generate(size_t key_size, SecretKey *sk, PublicKey *pk) {
+  if (key_size != 256) key_size = 256;
   YACL_ENFORCE(key_size == 256,
                "Exponential EC Elgamal only supports 256 key_size now");
   // todo: change sm2 to fourq
