@@ -24,7 +24,7 @@ if (OPENMP_FOUND)
 endif ()
 
 # include directories and link libraries
-include_directories(. third_party/include)
+include_directories(. include third_party/include)
 link_directories(third_party/lib)
 set(EXTRA_LIB)
 if (APPLE)
@@ -41,7 +41,7 @@ set(ABSL_LIB absl_int128 absl_strings absl_symbolize absl_stacktrace absl_throw_
 add_library(${PROJECT_NAME} SHARED ${SRCS})
 #target_sources(${PROJECT_NAME} PRIVATE)
 target_link_libraries(${PROJECT_NAME} yacl ${ABSL_LIB} # protobuf::libprotobuf protobuf::libprotobuf-lite
-        tommath fmt ssl crypto blake3 sodium curve25519)
+        tommath fmt blake3 sodium curve25519)
 set(EXE_TARGETS)
 
 # Building tests
@@ -79,7 +79,7 @@ endforeach ()
 add_executable(${PROJECT_NAME}_tests ${PROJECT_NAME}/tests.cc)
 target_link_libraries(${PROJECT_NAME}_tests ${PROJECT_NAME}
         GTest::GTest
-        )
+)
 file(GLOB TEST_SUITS ${PROJECT_NAME}/tests/*_test.cc)
 target_sources(${PROJECT_NAME}_tests PRIVATE ${TEST_SUITS})
 list(APPEND EXE_TARGETS ${PROJECT_NAME}_tests)
@@ -91,4 +91,4 @@ set_target_properties(${PROJECT_NAME} ${EXE_TARGETS} PROPERTIES
         CXX_STANDARD ${CMAKE_CXX_STANDARD}
         CXX_EXTENSIONS OFF
         CXX_STANDARD_REQUIRED ON
-        )
+)

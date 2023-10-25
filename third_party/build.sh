@@ -5,7 +5,6 @@ cd "$CD" || exit
 echo "Current Directory: $CD"
 [ -d src ] || mkdir src
 
-#rm -rf include/* lib/*
-rm -rf lib/*
+rm -rf include/* lib/* && mkdir include lib
 # build yacl
 "$CD"/build_yacl.sh
