@@ -32,4 +32,4 @@ make -j8 "$pkg"
 rm -rf "$CD"/lib/cmake && rm -rf "$CD"/lib/pkgconfig
 cp "$CD"/$pkg/build/lib"$pkg".* "$CD"/lib/
 cd "$CD" || exit
-#rm -rf "$pkg"
+rm -rf "$pkg"
