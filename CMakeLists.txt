@@ -5,6 +5,7 @@ project(heu VERSION 1.0 LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 17)
 option(ENABLE_IPCL "whether enable ipcl" OFF)
 option(ENABLE_GPU_PAILLIER "whether enable gpu_paillier" OFF)
+add_definitions(-DMSGPACK_NO_BOOST)
 
 file(GLOB_RECURSE SRCS ${PROJECT_NAME}/library/*.cpp ${PROJECT_NAME}/library/*.cc)
 file(GLOB_RECURSE IPCL_SRCS ${PROJECT_NAME}/library/algorithms/paillier_ipcl/*.cc)
