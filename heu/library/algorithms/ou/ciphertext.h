@@ -35,6 +35,16 @@ class Ciphertext : public HeObject<Ciphertext> {
     return !this->operator==(other);
   }
 
+  yacl::Buffer Serialize() const override {
+    // return c_.ToMagBytes();
+    return c_.Serialize();
+  }
+
+  void Deserialize(yacl::ByteContainerView in) override {
+    // c_.FromMagBytes(in);
+    c_.Deserialize(in);
+  }
+
   MSGPACK_DEFINE(c_);
 
   // TODO: make this private.

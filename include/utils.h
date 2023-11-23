@@ -2,44 +2,17 @@
 // Created by HqZhao on 2022/11/15.
 //
 
-#ifndef UTILS_H
-#define UTILS_H
+#pragma once
+#pragma ide diagnostic ignored "UnusedValue"
 
-#include <gmp.h>
+#include <omp.h>
 
 #include <cassert>
 #include <chrono>
 #include <cstdint>
 #include <functional>
+#include <iostream>
 #include <mutex>
-
-struct fb_instance {
-  mpz_t m_mod;
-  mpz_t *m_table_G;
-  size_t m_h;
-  size_t m_t;
-  size_t m_w;
-};
-
-void fbpowmod_init_extend(fb_instance &fb_ins, const mpz_t base,
-                          const mpz_t mod, size_t bitsize, size_t winsize);
-
-void fbpowmod_extend(const fb_instance &fb_ins, mpz_t result, const mpz_t exp);
-
-void fbpowmod_end_extend(fb_instance &fb_ins);
-
-#ifdef WIN32
-#define SleepMiliSec(x) Sleep(x)
-#else
-#define SleepMiliSec(x) usleep((x) << 10)
-#endif
-
-#define ceil_divide(x, y) ((((x) + (y)-1) / (y)))
-
-/**
- * returns a random mpz_t with bitlen len generated from dev/urandom
- */
-void aby_prng(mpz_t rnd, mp_bitcnt_t len);
 
 void repeat(
     std::function<void(int)> fn, std::size_t n,
@@ -184,4 +157,124 @@ void ParallelFor(Index size, int32_t n_threads, Func fn) {
   ParallelFor(size, n_threads, Sched::Static(), fn);
 }
 
-#endif  // UTILS_H
+template <typename Index, typename Func>
+void ParallelFor(Index size, Func fn) {
+#pragma omp parallel num_threads(1)
+#pragma omp for
+  for (int i = 0; i < size; ++i) {
+    fn(i);
+  }
+}
+
+#define CHECK_BINARY_OP(a, b, op, msg) \
+  if (!(a op b)) std::cerr << "Check failed: " << #msg << std::endl;
+#define CHECK_LT(a, b) CHECK_BINARY_OP(a, b, <, a < b is necessary)
+#define CHECK_GE(a, b) CHECK_BINARY_OP(a, b, >=, a >= b is necessary)
+
+// Represent simple range of indexes [begin, end)
+// Inspired by tbb::blocked_range
+class Range1d {
+ public:
+  Range1d(size_t begin, size_t end) : begin_(begin), end_(end) {
+    CHECK_LT(begin, end);
+  }
+
+  size_t begin() const {  // NOLINT
+    return begin_;
+  }
+
+  size_t end() const {  // NOLINT
+    return end_;
+  }
+
+ private:
+  size_t begin_;
+  size_t end_;
+};
+
+// Split 2d space to balanced blocks
+// Implementation of the class is inspired by tbb::blocked_range2d
+// However, TBB provides only (n x m) 2d range (matrix) separated by blocks.
+// Example: [ 1,2,3 ] [ 4,5,6 ] [ 7,8,9 ] But the class is able to work with
+// different sizes in each 'row'. Example: [ 1,2 ] [ 3,4,5,6 ] [ 7,8,9] If
+// grain_size is 2: It produces following blocks: [1,2], [3,4], [5,6], [7,8],
+// [9] The class helps to process data in several tree nodes (non-balanced
+// usually) in parallel Using nested parallelism (by nodes and by data in each
+// node) it helps  to improve CPU resources utilization
+class BlockedSpace2d {
+ public:
+  // Example of space:
+  // [ 1,2 ]
+  // [ 3,4,5,6 ]
+  // [ 7,8,9]
+  // BlockedSpace2d will create following blocks (tasks) if grain_size=2:
+  // 1-block: first_dimension = 0, range of indexes in a 'row' = [0,2) (includes
+  // [1,2] values) 2-block: first_dimension = 1, range of indexes in a 'row' =
+  // [0,2) (includes [3,4] values) 3-block: first_dimension = 1, range of
+  // indexes in a 'row' = [2,4) (includes [5,6] values) 4-block: first_dimension
+  // = 2, range of indexes in a 'row' = [0,2) (includes [7,8] values) 5-block:
+  // first_dimension = 2, range of indexes in a 'row' = [2,3) (includes [9]
+  // values) Arguments: dim1 - size of the first dimension in the space
+  // getter_size_dim2 - functor to get the second dimensions for each 'row' by
+  // row-index grain_size - max size of produced blocks
+  template <typename Func>
+  BlockedSpace2d(size_t dim1, Func getter_size_dim2, size_t grain_size) {
+    for (size_t i = 0; i < dim1; ++i) {
+      const size_t size = getter_size_dim2(i);
+      const size_t n_blocks = size / grain_size + !!(size % grain_size);
+      for (size_t iblock = 0; iblock < n_blocks; ++iblock) {
+        const size_t begin = iblock * grain_size;
+        const size_t end = std::min(begin + grain_size, size);
+        AddBlock(i, begin, end);
+      }
+    }
+  }
+
+  // Amount of blocks(tasks) in a space
+  size_t Size() const { return ranges_.size(); }
+
+  // get index of the first dimension of i-th block(task)
+  size_t GetFirstDimension(size_t i) const {
+    CHECK_LT(i, first_dimension_.size());
+    return first_dimension_[i];
+  }
+
+  // get a range of indexes for the second dimension of i-th block(task)
+  Range1d GetRange(size_t i) const {
+    CHECK_LT(i, ranges_.size());
+    return ranges_[i];
+  }
+
+ private:
+  void AddBlock(size_t first_dimension, size_t begin, size_t end) {
+    first_dimension_.push_back(first_dimension);
+    ranges_.emplace_back(begin, end);
+  }
+
+  std::vector<Range1d> ranges_;
+  std::vector<size_t> first_dimension_;
+};
+
+// Wrapper to implement nested parallelism with simple omp parallel for
+template <typename Func>
+void ParallelFor2d(const BlockedSpace2d &space, int nthreads, Func func) {
+  const size_t num_blocks_in_space = space.Size();
+  CHECK_GE(nthreads, 1);
+
+  OMPException exc;
+#pragma omp parallel num_threads(nthreads)
+  {
+    exc.Run([&]() {
+      size_t tid = omp_get_thread_num();
+      size_t chunck_size =
+          num_blocks_in_space / nthreads + !!(num_blocks_in_space % nthreads);
+
+      size_t begin = chunck_size * tid;
+      size_t end = std::min(begin + chunck_size, num_blocks_in_space);
+      for (auto i = begin; i < end; i++) {
+        func(space.GetFirstDimension(i), space.GetRange(i));
+      }
+    });
+  }
+  exc.Rethrow();
+}

@@ -18,6 +18,8 @@
 #include <string>
 #include <unordered_map>
 
+#define USE_MSGPACK 0
+
 namespace heu::lib::algorithms::elgamal {
 
 namespace {
@@ -57,6 +59,7 @@ void Ciphertext::EnableEcGroup(
 }
 
 yacl::Buffer Ciphertext::Serialize(bool with_meta) const {
+#if USE_MSGPACK == 1
   msgpack::sbuffer buffer;
   msgpack::packer<msgpack::sbuffer> o(buffer);
 
@@ -72,9 +75,24 @@ yacl::Buffer Ciphertext::Serialize(bool with_meta) const {
 
   auto sz = buffer.size();
   return {buffer.release(), sz, [](void* ptr) { free(ptr); }};
+#else
+  auto ca1 = std::get<yacl::crypto::Array160>(c1);
+  auto ca2 = std::get<yacl::crypto::Array160>(c2);
+  auto size = ca1.size();
+  auto hash_size = sizeof(size_t);
+  yacl::Buffer buf(size * 2 + hash_size);
+  std::byte* data = static_cast<std::byte*>(buf.data());
+  // std::memcpy(ptr_ + size, buf2.data(), size);
+  std::memcpy(data, ca1.data(), size);
+  std::memcpy(data + size, ca2.data(), size);
+  auto hash = HashEcGroup(ec);
+  std::memcpy(data + 2 * size, &hash, hash_size);
+  return buf;
+#endif
 }
 
 void Ciphertext::Deserialize(yacl::ByteContainerView in) {
+#if USE_MSGPACK == 1
   auto msg =
       msgpack::unpack(reinterpret_cast<const char*>(in.data()), in.size());
   msgpack::object object = msg.get();
@@ -100,6 +118,18 @@ void Ciphertext::Deserialize(yacl::ByteContainerView in) {
 
   c1 = ec->DeserializePoint(object.via.array.ptr[idx++].as<std::string_view>());
   c2 = ec->DeserializePoint(object.via.array.ptr[idx++].as<std::string_view>());
+#else
+  auto hash_size = sizeof(size_t);
+  auto size = (in.size() - hash_size) / 2;
+  yacl::crypto::Array160 a1, a2;
+  std::memcpy(a1.data(), in.data(), size);
+  std::memcpy(a2.data(), in.data() + size, size);
+  c1 = std::move(a1);
+  c2 = std::move(a2);
+  std::size_t hash;
+  std::memcpy(&hash, in.data() + 2 * size, hash_size);
+  ec = kEcGroupCache.at(hash);
+#endif
 }
 
 }  // namespace heu::lib::algorithms::elgamal

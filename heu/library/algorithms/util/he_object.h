@@ -29,14 +29,14 @@ class HeObject {
   virtual ~HeObject() = default;
 
  public:
-  [[nodiscard]] yacl::Buffer Serialize() const {
+  [[nodiscard]] virtual yacl::Buffer Serialize() const {
     msgpack::sbuffer buffer;
     msgpack::pack(buffer, *static_cast<const T*>(this));
     auto sz = buffer.size();
     return {buffer.release(), sz, [](void* ptr) { free(ptr); }};
   }
 
-  void Deserialize(yacl::ByteContainerView in) {
+  virtual void Deserialize(yacl::ByteContainerView in) {
     auto msg =
         msgpack::unpack(reinterpret_cast<const char*>(in.data()), in.size());
     msgpack::object obj = msg.get();
