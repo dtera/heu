@@ -4,8 +4,6 @@
 
 #pragma once
 
-#include <chrono>
-#include <functional>
 #include <iostream>
 #include <string>
 #include <unordered_map>
@@ -94,30 +92,6 @@ class StopWatch {
   void Print(_Fp fp, const std::string &mark = default_mark()) {
     auto show = std::bind(fp, this, std::placeholders::_1);
     std::cout << mark << " costs " << show(mark) << std::endl;
-  }
-
-  void PrintWithNano(const std::string &mark = default_mark()) {
-    Print(&StopWatch::ShowTickNano, mark);
-  }
-
-  void PrintWithMicro(const std::string &mark = default_mark()) {
-    Print(&StopWatch::ShowTickMicro, mark);
-  }
-
-  void PrintWithMills(const std::string &mark = default_mark()) {
-    Print(&StopWatch::ShowTickMills, mark);
-  }
-
-  void PrintWithSeconds(const std::string &mark = default_mark()) {
-    Print(&StopWatch::ShowTickSeconds, mark);
-  }
-
-  void PrintWithMinutes(const std::string &mark = default_mark()) {
-    Print(&StopWatch::ShowTickMinutes, mark);
-  }
-
-  void PrintWithHours(const std::string &mark = default_mark()) {
-    Print(&StopWatch::ShowTickHours, mark);
   }
 
  protected:

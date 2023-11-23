@@ -18,6 +18,8 @@
 #include <string>
 #include <unordered_map>
 
+#define USE_MSGPACK 0
+
 namespace heu::lib::algorithms::elgamal {
 
 namespace {
@@ -56,12 +58,8 @@ void Ciphertext::EnableEcGroup(
   kEcGroupCache.try_emplace(HashEcGroup(curve), curve);
 }
 
-yacl::Buffer Ciphertext::Serialize(
-#ifndef NO_USE_MSGPACK
-    bool with_meta
-#endif
-) const {
-#ifndef NO_USE_MSGPACK
+yacl::Buffer Ciphertext::Serialize(bool with_meta) const {
+#if USE_MSGPACK == 1
   msgpack::sbuffer buffer;
   msgpack::packer<msgpack::sbuffer> o(buffer);
 
@@ -76,7 +74,7 @@ yacl::Buffer Ciphertext::Serialize(
   o.pack(std::string_view(ec->SerializePoint(c2)));
 
   auto sz = buffer.size();
-  return {buffer.release(), sz, [](void *ptr) { free(ptr); }};
+  return {buffer.release(), sz, [](void* ptr) { free(ptr); }};
 #else
   auto ca1 = std::get<yacl::crypto::Array160>(c1);
   auto ca2 = std::get<yacl::crypto::Array160>(c2);
@@ -94,7 +92,7 @@ yacl::Buffer Ciphertext::Serialize(
 }
 
 void Ciphertext::Deserialize(yacl::ByteContainerView in) {
-#ifndef NO_USE_MSGPACK
+#if USE_MSGPACK == 1
   auto msg =
       msgpack::unpack(reinterpret_cast<const char *>(in.data()), in.size());
   msgpack::object object = msg.get();
