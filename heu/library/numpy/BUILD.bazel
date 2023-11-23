@@ -3,33 +3,6 @@ load("@yacl//bazel:yacl.bzl", "yacl_cc_binary", "yacl_cc_library", "yacl_cc_test
 package(default_visibility = ["//visibility:public"])
 
 yacl_cc_library(
-    name = "numpy_all",
-    srcs = [
-        "decryptor.cc",
-        "encryptor.cc",
-        "evaluator.cc",
-        "random.cc",
-        "toolbox.cc",
-    ],
-    hdrs = [
-        "decryptor.h",
-        "eigen_traits.h",
-        "encryptor.h",
-        "evaluator.h",
-        "matrix.h",
-        "numpy.h",
-        "random.h",
-        "shape.h",
-        "toolbox.h",
-    ],
-    deps = [
-        "//heu/library/phe",
-        "@com_github_eigenteam_eigen//:eigen3",
-        "@yacl//yacl/utils:parallel",
-    ],
-)
-
-yacl_cc_library(
     name = "numpy",
     hdrs = ["numpy.h"],
     deps = [
@@ -41,14 +14,21 @@ yacl_cc_library(
     ],
 )
 
+cc_proto_library(
+    name = "ic_de_proto",
+    deps = ["@org_interconnection//interconnection/runtime:data_exchange"],
+)
+
 yacl_cc_library(
     name = "matrix",
+    srcs = ["matrix.cc"],
     hdrs = [
         "eigen_traits.h",
         "matrix.h",
         "shape.h",
     ],
     deps = [
+        ":ic_de_proto",
         "//heu/library/phe",
         "@com_github_eigenteam_eigen//:eigen3",
         "@yacl//yacl/utils:parallel",
@@ -105,12 +85,6 @@ yacl_cc_library(
         ":matrix",
         "//heu/library/phe",
     ],
-)
-
-yacl_cc_test(
-    name = "numpy_test",
-    srcs = ["numpy_test.cc"],
-    deps = [":numpy_all"],
 )
 
 yacl_cc_test(
