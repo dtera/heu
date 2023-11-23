@@ -58,7 +58,11 @@ void Ciphertext::EnableEcGroup(
   kEcGroupCache.try_emplace(HashEcGroup(curve), curve);
 }
 
-yacl::Buffer Ciphertext::Serialize(bool with_meta) const {
+yacl::Buffer Ciphertext::Serialize(
+#if USE_MSGPACK == 1
+    bool with_meta
+#endif
+) const {
 #if USE_MSGPACK == 1
   msgpack::sbuffer buffer;
   msgpack::packer<msgpack::sbuffer> o(buffer);
