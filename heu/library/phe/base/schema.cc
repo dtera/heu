@@ -46,7 +46,7 @@ static const std::map<SchemaType, std::vector<std::string>>
                  "paillier_z", "paillier_zahlen"),
         MAP_ITEM(true, FPaillier, "f-paillier", "fpaillier", "paillier_f",
                  "paillier_float"),
-        MAP_ITEM(true, IcPaillier, "ic-paillier", "icpaillier", "ic_paillier",
+        MAP_ITEM(ENABLE_IC, IcPaillier, "ic-paillier", "icpaillier", "ic_paillier",
                  "paillier_ic", "paillier-interconnection"),
         MAP_ITEM(ENABLE_GPAILLIER, GPaillier, "g-paillier", "gpaillier",
                  "paillier_g", "paillier_gpu"),

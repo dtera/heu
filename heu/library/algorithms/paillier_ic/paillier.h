@@ -15,7 +15,12 @@
 #pragma once
 
 // DJ paillier scheme, reference: https://www.brics.dk/DS/03/9/BRICS-DS-03-9.pdf
-
+#ifdef USE_CMAKE
+#define ENABLE_IC false
+#else
+#define ENABLE_IC true
+#endif
+#if ENABLE_IC == true
 #include "heu/library/algorithms/paillier_ic/ciphertext.h"
 #include "heu/library/algorithms/paillier_ic/decryptor.h"
 #include "heu/library/algorithms/paillier_ic/encryptor.h"
@@ -23,3 +28,4 @@
 #include "heu/library/algorithms/paillier_ic/key_generator.h"
 #include "heu/library/algorithms/paillier_ic/public_key.h"
 #include "heu/library/algorithms/paillier_ic/secret_key.h"
+#endif
