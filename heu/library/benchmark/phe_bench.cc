@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "UnreachableCode"
-#pragma ide diagnostic ignored "UnusedLocalVariable"
-
+#ifdef USE_CMAKE
 #include <omp.h>
+
+#include "utils.h"
+#endif
 
 #include <functional>
 #include <future>
@@ -25,7 +25,6 @@
 #include "benchmark/benchmark.h"
 #include "fmt/ranges.h"
 #include "gflags/gflags.h"
-#include "utils.h"
 
 #include "heu/library/phe/encoding/encoding.h"
 #include "heu/library/phe/phe.h"
@@ -80,14 +79,18 @@ class PheBenchmarks {
     // encrypt
     const auto &encryptor = he_kit_->GetEncryptor();
     for (auto _ : state) {
+#ifdef USE_CMAKE
       if (parallel) {
         ParallelFor(kTestSize, n_thread,
                     [&](int i) { *(cts_ + i) = encryptor->Encrypt(pts_[i]); });
       } else {
+#endif
         for (int i = 0; i < kTestSize; ++i) {
           *(cts_ + i) = encryptor->Encrypt(pts_[i]);
         }
+#ifdef USE_CMAKE
       }
+#endif
     }
   }
 
@@ -151,14 +154,18 @@ class PheBenchmarks {
     // decrypt
     const auto &decryptor = he_kit_->GetDecryptor();
     for (auto _ : state) {
+#ifdef USE_CMAKE
       if (parallel) {
         ParallelFor(kTestSize, n_thread,
                     [&](int i) { decryptor->Decrypt(cts_[i], pts_ + i); });
       } else {
+#endif
         for (int i = 0; i < kTestSize; ++i) {
           decryptor->Decrypt(cts_[i], pts_ + i);
         }
+#ifdef USE_CMAKE
       }
+#endif
     }
   }
 
@@ -167,8 +174,10 @@ class PheBenchmarks {
   std::unique_ptr<phe::HeKit> he_kit_;
   phe::Plaintext pts_[kTestSize];
   phe::Ciphertext cts_[kTestSize];
+#ifdef USE_CMAKE
   bool parallel = true;
   int n_thread = 10;
+#endif
 };
 
 }  // namespace heu::lib::bench

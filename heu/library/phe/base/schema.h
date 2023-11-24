@@ -49,7 +49,7 @@ enum class SchemaType : uint8_t {
   ENUM_ELEMENT(3, ENABLE_GPAILLIER, GPaillier)
   ENUM_ELEMENT(4, true, ZPaillier)  // Preferred
   ENUM_ELEMENT(5, true, FPaillier)
-  ENUM_ELEMENT(6, true, IcPaillier) // Paillier03 for interconnection
+  ENUM_ELEMENT(6, ENABLE_IC, IcPaillier) // Paillier03 for interconnection
   ENUM_ELEMENT(7, ENABLE_CLUSTAR_FPGA, ClustarFPGA)
   ENUM_ELEMENT(8, true, ElGamal)
   ENUM_ELEMENT(10, true, DGK)
