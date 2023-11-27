@@ -18,8 +18,6 @@
 #include <string>
 #include <unordered_map>
 
-#define USE_MSGPACK 0
-
 namespace heu::lib::algorithms::elgamal {
 
 namespace {

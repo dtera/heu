@@ -23,6 +23,8 @@
 
 #include "heu/library/algorithms/elgamal/public_key.h"
 
+#define USE_MSGPACK 0
+
 namespace heu::lib::algorithms::elgamal {
 
 // SPI: Do not change class name.
