@@ -81,7 +81,7 @@ HeKit::HeKit(SchemaType schema_type) {
   Setup(std::move(pk), std::move(sk));
 }
 
-#define PK_SK_INIT(ns)                                                         \
+/*#define PK_SK_INIT(ns) \
   [&](ns::PublicKey& pk) {                                                     \
     ns::SecretKey sk;                                                          \
     sk.Deserialize(sk_buffer);                                                 \
@@ -101,7 +101,7 @@ HeKit::HeKit(yacl::ByteContainerView pk_buffer,
   auto sk = public_key_->Visit(
       HE_DISPATCH_RET(std::shared_ptr<SecretKey>, PK_SK_INIT));
   secret_key_ = std::move(sk);
-}
+}*/
 
 #define HE_SPECIAL_SETUP_BY_PK(ns)                                     \
   [&](const ns::PublicKey& pk1) {                                      \
