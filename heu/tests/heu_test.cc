@@ -44,8 +44,7 @@ void Add(const heu::lib::phe::SchemaType &schema) {
   auto encoder = he_kit.GetEncoder<heu::lib::phe::PlainEncoder>(1e4);
 
   heu::lib::phe::Ciphertext c1 = encryptor->Encrypt(encoder.Encode(2.8));
-  heu::lib::phe::Ciphertext c2 = encryptor->Encrypt(
-      encoder.Encode(0.012));
+  heu::lib::phe::Ciphertext c2 = encryptor->Encrypt(encoder.Encode(0.012));
   heu::lib::phe::Ciphertext res;
 
   StopWatch sw;
