@@ -8,7 +8,7 @@ SSL_PREFIX=$([[ "$1" == "" ]] && echo "$CD" || echo "$1")
 # build yacl
 # [ -d yacl ] || https://github.com/dtera/yacl.git
 pkg=yacl
-[ -f src/"$pkg".tar.gz ] || curl https://github.com/dtera/yacl/releases/download/v1.0.2/"$pkg".tar.gz -L -o src/"$pkg".tar.gz
+[ -f src/"$pkg".tar.gz ] || curl https://github.com/dtera/yacl/releases/download/v1.0.3/"$pkg".tar.gz -L -o src/"$pkg".tar.gz
 rm -rf "$pkg" && tar xvf src/"$pkg".tar.gz && "$pkg"/third_party/build.sh "$SSL_PREFIX"
 #"$pkg"/third_party/build_openssl.sh "$SSL_PREFIX"
 #mv "$CD/$pkg/third_party/lib/libssl"* "$CD"/lib/ && mv "$CD/$pkg/third_party/lib/libcrypto"* "$CD"/lib/
