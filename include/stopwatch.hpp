@@ -94,6 +94,30 @@ class StopWatch {
     std::cout << mark << " costs " << show(mark) << std::endl;
   }
 
+  void PrintWithNano(const std::string &mark = default_mark()) {
+    Print(&StopWatch::ShowTickNano, mark);
+  }
+
+  void PrintWithMicro(const std::string &mark = default_mark()) {
+    Print(&StopWatch::ShowTickMicro, mark);
+  }
+
+  void PrintWithMills(const std::string &mark = default_mark()) {
+    Print(&StopWatch::ShowTickMills, mark);
+  }
+
+  void PrintWithSeconds(const std::string &mark = default_mark()) {
+    Print(&StopWatch::ShowTickSeconds, mark);
+  }
+
+  void PrintWithMinutes(const std::string &mark = default_mark()) {
+    Print(&StopWatch::ShowTickMinutes, mark);
+  }
+
+  void PrintWithHours(const std::string &mark = default_mark()) {
+    Print(&StopWatch::ShowTickHours, mark);
+  }
+
  protected:
   static inline std::string &default_mark() {
     static std::string inst("__default__");
