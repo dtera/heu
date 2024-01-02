@@ -61,7 +61,7 @@ else ()
 endif ()
 
 # include directories and link libraries
-include_directories(. include third_party/include)
+include_directories(. include third_party/yacl third_party/include)
 link_directories(third_party/lib)
 set(EXTRA_LIB)
 if (APPLE)
