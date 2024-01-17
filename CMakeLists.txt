@@ -65,6 +65,7 @@ include_directories(. include third_party/yacl third_party/include)
 link_directories(third_party/lib)
 set(EXTRA_LIB)
 if (APPLE)
+    # brew install benchmark gflags gmp
     find_package(benchmark REQUIRED)
     find_package(gflags REQUIRED)
     list(APPEND EXTRA_LIB benchmark::benchmark gflags)
@@ -75,7 +76,7 @@ set(ABSL_LIB absl_int128 absl_strings absl_symbolize absl_stacktrace absl_throw_
 add_library(${PROJECT_NAME} SHARED ${SRCS})
 #target_sources(${PROJECT_NAME} PRIVATE)
 target_link_libraries(${PROJECT_NAME} yacl ${ABSL_LIB} # protobuf::libprotobuf protobuf::libprotobuf-lite
-        tommath fmt blake3 sodium curve25519)
+        tommath fmt blake3 sodium curve25519 gmp)
 set(EXE_TARGETS)
 
 # Building tests
