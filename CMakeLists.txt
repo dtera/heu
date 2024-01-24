@@ -63,13 +63,6 @@ endif ()
 # include directories and link libraries
 include_directories(. include third_party/yacl third_party/include)
 link_directories(third_party/lib)
-set(EXTRA_LIB)
-if (APPLE)
-    # brew install benchmark gflags gmp
-    find_package(benchmark REQUIRED)
-    find_package(gflags REQUIRED)
-    list(APPEND EXTRA_LIB benchmark::benchmark gflags)
-endif ()
 
 set(ABSL_LIB absl_int128 absl_strings absl_symbolize absl_stacktrace absl_throw_delegate)
 # link libraries for the target
@@ -95,7 +88,7 @@ foreach (bench_file ${BENCH_SRCS})
     string(REPLACE ".cc" "" bench_name ${bench_file})
     string(REGEX REPLACE "(.*)?/" "" bench_name ${bench_name})
     add_executable(${PROJECT_NAME}_${bench_name} ${bench_file})
-    target_link_libraries(${PROJECT_NAME}_${bench_name} ${PROJECT_NAME} ${EXTRA_LIB} GTest::GTest)
+    target_link_libraries(${PROJECT_NAME}_${bench_name} ${PROJECT_NAME} benchmark gflags GTest::GTest)
     list(APPEND EXE_TARGETS ${PROJECT_NAME}_${bench_name})
 endforeach ()
 

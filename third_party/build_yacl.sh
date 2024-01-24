@@ -33,7 +33,6 @@ cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DCMAKE_CXX_STA
 cmake --build . -j 8 --target "$pkg"
 #make -j8 "$pkg"
 
-rm -rf "$CD"/lib/{cmake,pkgconfig,engines-1.1}
 cp "$CD"/$pkg/build/lib"$pkg".* "$CD"/lib/
 cd "$CD" || exit
 rm -rf "$pkg"

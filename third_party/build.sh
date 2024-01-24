@@ -13,3 +13,5 @@ rm -rf include lib && mkdir include lib
 "$CD"/build_yacl.sh "$PREFIX"
 # patches
 "$CD"/patches.sh
+
+rm -rf "$CD"/lib/{cmake,pkgconfig,engines-1.1} "$CD"/{share,lib54}
