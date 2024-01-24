@@ -24,10 +24,11 @@ for path in $(find $pkg -name "*.h"); do
 done
 
 cd "$CD"/$pkg && rm -rf build && mkdir build && cd build || exit
-cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DCMAKE_CXX_STANDARD=17 -DCMAKE_INSTALL_PREFIX="$CD" ..
-make -j8 "$pkg"
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DCMAKE_CXX_STANDARD=17 -DCMAKE_INSTALL_PREFIX="$CD" ..
+cmake --build . -j 8 --target "$pkg"
+#make -j8 "$pkg"
 
-rm -rf "$CD"/lib/cmake && rm -rf "$CD"/lib/pkgconfig && rm -rf "$CD"/lib/engines-1.1
+rm -rf "$CD"/lib/{cmake,pkgconfig,engines-1.1}
 cp "$CD"/$pkg/build/lib"$pkg".* "$CD"/lib/
 cd "$CD" || exit
 rm -rf "$pkg"
