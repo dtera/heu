@@ -14,7 +14,7 @@
 #pragma once
 
 /*!
- * Copyright (c) 2023 Tencent Inc.
+ * Copyright (c) 2024 dterazhao.
  * \file heu_api.h
  * \author dterazhao
  * \brief C API of HEU, used for interfacing to other languages.
