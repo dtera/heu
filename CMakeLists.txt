@@ -9,7 +9,8 @@ option(ENABLE_IC "whether enable ic" OFF)
 add_definitions(-DMSGPACK_NO_BOOST)
 add_definitions(-DUSE_CMAKE)
 
-file(GLOB_RECURSE SRCS ${PROJECT_NAME}/library/*.cpp ${PROJECT_NAME}/library/*.cc ${PROJECT_NAME}/library/*.cu)
+file(GLOB_RECURSE SRCS ${PROJECT_NAME}/library/*.cpp ${PROJECT_NAME}/library/*.cc ${PROJECT_NAME}/library/*.cu
+        ${PROJECT_NAME}/api/*.cc)
 file(GLOB_RECURSE IPCL_SRCS ${PROJECT_NAME}/library/algorithms/paillier_ipcl/*.cc)
 file(GLOB_RECURSE PAILLIER_GPU_SRCS ${PROJECT_NAME}/library/algorithms/paillier_gpu/*.cc
         ${PROJECT_NAME}/library/algorithms/paillier_gpu/gpulib/*.cu)
