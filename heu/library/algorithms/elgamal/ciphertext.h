@@ -47,7 +47,7 @@ struct Ciphertext {
       const std::shared_ptr<yacl::crypto::EcGroup> &curve);
 
   yacl::Buffer Serialize(
-#if USE_MSGPACK == 1
+#ifndef NO_USE_MSGPACK
       bool with_meta = false
 #endif
   ) const;

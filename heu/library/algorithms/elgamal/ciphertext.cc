@@ -57,11 +57,11 @@ void Ciphertext::EnableEcGroup(
 }
 
 yacl::Buffer Ciphertext::Serialize(
-#if USE_MSGPACK == 1
+#ifndef NO_USE_MSGPACK
     bool with_meta
 #endif
 ) const {
-#if USE_MSGPACK == 1
+#ifndef NO_USE_MSGPACK
   msgpack::sbuffer buffer;
   msgpack::packer<msgpack::sbuffer> o(buffer);
 
@@ -94,7 +94,7 @@ yacl::Buffer Ciphertext::Serialize(
 }
 
 void Ciphertext::Deserialize(yacl::ByteContainerView in) {
-#if USE_MSGPACK == 1
+#ifndef NO_USE_MSGPACK
   auto msg =
       msgpack::unpack(reinterpret_cast<const char*>(in.data()), in.size());
   msgpack::object object = msg.get();

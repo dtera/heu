@@ -35,7 +35,7 @@ class Ciphertext : public HeObject<Ciphertext> {
     return !this->operator==(other);
   }
 
-#if USE_MSGPACK == 0
+#ifdef NO_USE_MSGPACK
   yacl::Buffer Serialize() const override {
     // return c_.ToMagBytes();
     // return c_.Serialize();

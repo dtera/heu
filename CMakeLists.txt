@@ -8,6 +8,7 @@ option(ENABLE_GPU "whether enable gpu" OFF)
 option(ENABLE_IC "whether enable ic" OFF)
 add_definitions(-DMSGPACK_NO_BOOST)
 add_definitions(-DUSE_CMAKE)
+add_definitions(-DNO_USE_MSGPACK)
 
 file(GLOB_RECURSE SRCS ${PROJECT_NAME}/library/*.cpp ${PROJECT_NAME}/library/*.cc ${PROJECT_NAME}/library/*.cu
         ${PROJECT_NAME}/api/*.cc)

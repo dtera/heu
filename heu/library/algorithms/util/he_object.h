@@ -20,8 +20,6 @@
 #include "msgpack.hpp"
 #include "yacl/base/byte_container_view.h"
 
-#define USE_MSGPACK 0
-
 namespace heu::lib::algorithms {
 
 template <typename T>
