@@ -29,9 +29,13 @@ if echo "$OSTYPE" | grep -q "linux" || [[ "$OSTYPE" == "" ]]; then
 fi
 
 cd "$CD"/$pkg && rm -rf build && mkdir build && cd build || exit
-cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DCMAKE_CXX_STANDARD=17 -DCMAKE_INSTALL_PREFIX="$CD" ..
-cmake --build . -j 8 --target "$pkg"
-#make -j8 "$pkg"
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DCMAKE_CXX_STANDARD=17 -DCMAKE_INSTALL_PREFIX="$CD" ..
+  cmake --build . -j 8 --target "$pkg"
+else
+  cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DCMAKE_CXX_STANDARD=17 -DCMAKE_INSTALL_PREFIX="$CD" ..
+  make -j8 "$pkg"
+fi
 
 cp "$CD"/$pkg/build/lib"$pkg".* "$CD"/lib/
 cd "$CD" || exit
