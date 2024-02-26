@@ -8,7 +8,7 @@ mkdir -p tmp/$pkg
 cp -R include third_party $pkg CMakeLists.txt tmp/$pkg/
 # shellcheck disable=SC2164
 pushd tmp
-rm -rf $pkg/third_party/{include,lib,bazel_cpp,bazel_rust}
+rm -rf $pkg/third_party/{include,lib,bin,share,yacl,bazel_cpp,bazel_rust}
 if [[ "$OSTYPE" == "darwin"* ]]; then
   gtar cvf $pkg.tar.gz $pkg
 else
