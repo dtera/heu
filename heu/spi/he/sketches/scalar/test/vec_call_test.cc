@@ -1,6 +1,6 @@
 // Copyright 2024 Ant Group Co., Ltd.
 //
-// Licensed under the Apache License, Version 2.0 (the "License"});
+// Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
@@ -22,7 +22,7 @@
 
 #include "heu/spi/he/sketches/scalar/test/dummy_ops.h"
 
-namespace heu::lib::spi::test {
+namespace heu::spi::test {
 
 class TestWessVecCall : public ::testing::Test {
  protected:
@@ -180,6 +180,10 @@ TEST_F(TestWessVecCall, TestVecInplace) {
   cts_vec = {DummyCt("1"), DummyCt("2"), DummyCt("3")};
   we_->RotateInplace(&cts, -12);
   ExpectItemEq<DummyCt>(cts, {"ct1<<=-12", "ct2<<=-12", "ct3<<=-12"});
+
+  cts_vec = {DummyCt("1"), DummyCt("2"), DummyCt("3")};
+  we_->BootstrapInplace(&cts);
+  ExpectItemEq<DummyCt>(cts, {":= boot(ct1)", ":= boot(ct2)", ":= boot(ct3)"});
 }
 
 TEST_F(TestWessVecCall, TestVecException) {
@@ -192,4 +196,4 @@ TEST_F(TestWessVecCall, TestVecException) {
   EXPECT_ANY_THROW(we_->AddInplace(&cts, pts));
 }
 
-}  // namespace heu::lib::spi::test
+}  // namespace heu::spi::test

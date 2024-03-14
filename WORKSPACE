@@ -1,3 +1,17 @@
+# Copyright 2024 Ant Group Co., Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 workspace(name = "com_alipay_sf_heu")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
@@ -7,7 +21,7 @@ load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
 SECRETFLOW_GIT = "https://github.com/secretflow"
 
-YACL_COMMIT_ID = "cbe5436f27ff9c4c9c7f7f6664f9fb9f6c852ec2"
+YACL_COMMIT_ID = "9a74ab6f4bb0c9c21171e945a379e27fde482cea"
 
 git_repository(
     name = "yacl",
@@ -107,3 +121,9 @@ load("@rules_cuda//cuda:repositories.bzl", "register_detected_cuda_toolchains", 
 rules_cuda_dependencies()
 
 register_detected_cuda_toolchains()
+
+#### for other third-party libs ####
+
+load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
+
+protobuf_deps()
