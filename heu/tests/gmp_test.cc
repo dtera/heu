@@ -1,3 +1,6 @@
+//
+// Created by HqZhao on 2023/11/16.
+//
 
 #include <gmp.h>
 #include <gtest/gtest.h>
@@ -25,7 +28,7 @@ TEST(gmp, test1) {
 void gmp_mod_test(size_t key_size, size_t iter, StopWatch &sw) {
   auto mark = "[mod]" + std::to_string(key_size) + " bits";
   sw.Mark(mark);
-  srand(arc4random());
+  srand(rand());
   size_t base = 2, exp;
   mpz_t t1, t2, t3, p, q, n, r;
   mpz_inits(t1, t2, t3, p, q, n, r, nullptr);
