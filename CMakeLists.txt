@@ -1,40 +1,47 @@
-cmake_minimum_required(VERSION 3.14)
-
-project(heu VERSION 1.0 LANGUAGES C CXX)
+cmake_minimum_required(VERSION 3.15)
 
 set(CMAKE_CXX_STANDARD 17)
-option(ENABLE_IPCL "whether enable ipcl" OFF)
-option(ENABLE_GPU "whether enable gpu" OFF)
-option(ENABLE_IC "whether enable ic" OFF)
-add_definitions(-DMSGPACK_NO_BOOST)
-add_definitions(-DUSE_CMAKE)
-add_definitions(-DNO_USE_MSGPACK)
+cmake_policy(SET CMP0042 NEW)
+cmake_policy(SET CMP0104 NEW)
+if (APPLE)
+    project(heu VERSION 1.0 LANGUAGES C CXX)
+    option(ENABLE_GPU "whether enable gpu" OFF)
+else ()
+    project(heu VERSION 1.0 LANGUAGES C CXX CUDA)
+    option(ENABLE_GPU "whether enable gpu" ON)
+    add_definitions(-DENABLE_GPAILLIER=true)
 
-file(GLOB_RECURSE SRCS ${PROJECT_NAME}/library/*.cpp ${PROJECT_NAME}/library/*.cc ${PROJECT_NAME}/library/*.cu
-        ${PROJECT_NAME}/api/*.cc)
+    find_package(CUDAToolkit REQUIRED)
+    set(CMAKE_CUDA_STANDARD 17)
+    set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+endif ()
+
+option(ENABLE_IPCL "whether enable ipcl" OFF)
+option(ENABLE_IC "whether enable ic" OFF)
+add_definitions(-DMSGPACK_NO_BOOST -DUSE_CMAKE -DNO_USE_MSGPACK)
+
+file(GLOB_RECURSE SRCS ${PROJECT_NAME}/library/*.cpp ${PROJECT_NAME}/library/*.cc ${PROJECT_NAME}/api/*.cc)
 file(GLOB_RECURSE IPCL_SRCS ${PROJECT_NAME}/library/algorithms/paillier_ipcl/*.cc)
-file(GLOB_RECURSE PAILLIER_GPU_SRCS ${PROJECT_NAME}/library/algorithms/paillier_gpu/*.cc
+file(GLOB_RECURSE GPU_SRCS ${PROJECT_NAME}/library/algorithms/paillier_gpu/*.cc
         ${PROJECT_NAME}/library/algorithms/paillier_gpu/gpulib/*.cu)
 file(GLOB_RECURSE PAILLIER_IC_SRCS ${PROJECT_NAME}/library/algorithms/paillier_ic/*.cc)
 file(GLOB_RECURSE NP_SRCS ${PROJECT_NAME}/library/numpy/*.cc)
 file(GLOB_RECURSE TEST_SRCS ${PROJECT_NAME}/library/*_test*.cc)
 file(GLOB_RECURSE BENCH_SRCS ${PROJECT_NAME}/library/*_bench.cc)
 list(REMOVE_ITEM SRCS ${TEST_SRCS} ${BENCH_SRCS} ${NP_SRCS})
+list(REMOVE_ITEM GPU_SRCS ${TEST_SRCS} ${BENCH_SRCS} ${NP_SRCS})
 list(REMOVE_ITEM TEST_SRCS ${NP_SRCS})
 list(REMOVE_ITEM BENCH_SRCS ${NP_SRCS})
-#if (NOT APPLE)
-#    add_definitions(-DENABLE_GPAILLIER=true)
-#    set(ENABLE_GPU ON)
-#endif ()
+
 if (NOT ENABLE_IPCL)
     list(REMOVE_ITEM SRCS ${IPCL_SRCS})
     list(REMOVE_ITEM TEST_SRCS ${IPCL_SRCS})
     list(REMOVE_ITEM BENCH_SRCS ${IPCL_SRCS})
 endif ()
 if (NOT ENABLE_GPU)
-    list(REMOVE_ITEM SRCS ${PAILLIER_GPU_SRCS})
-    list(REMOVE_ITEM TEST_SRCS ${PAILLIER_GPU_SRCS})
-    list(REMOVE_ITEM BENCH_SRCS ${PAILLIER_GPU_SRCS})
+    list(REMOVE_ITEM SRCS ${GPU_SRCS})
+    list(REMOVE_ITEM TEST_SRCS ${GPU_SRCS})
+    list(REMOVE_ITEM BENCH_SRCS ${GPU_SRCS})
 endif ()
 if (NOT ENABLE_IC)
     list(REMOVE_ITEM SRCS ${PAILLIER_IC_SRCS})
@@ -68,14 +75,20 @@ else ()
 endif ()
 
 # include directories and link libraries
-include_directories(. include third_party/yacl third_party/include)
+include_directories(. include third_party/yacl third_party third_party/include)
 link_directories(third_party/lib)
 
 set(ABSL_LIB absl_int128 absl_strings absl_symbolize absl_stacktrace absl_throw_delegate)
+set(GPU_LIB)
+if (ENABLE_GPU)
+    add_library(${PROJECT_NAME}_GPU SHARED ${GPU_SRCS})
+    target_link_libraries(${PROJECT_NAME}_GPU CUDA::cudart)
+    list(APPEND GPU_LIB ${PROJECT_NAME}_GPU)
+endif ()
 # link libraries for the target
 add_library(${PROJECT_NAME} SHARED ${SRCS})
 #target_sources(${PROJECT_NAME} PRIVATE)
-target_link_libraries(${PROJECT_NAME} yacl ${ABSL_LIB} # protobuf::libprotobuf protobuf::libprotobuf-lite
+target_link_libraries(${PROJECT_NAME} yacl ${ABSL_LIB} ${GPU_LIB} # protobuf::libprotobuf protobuf::libprotobuf-lite
         tommath fmt blake3 sodium curve25519 gmp)
 set(EXE_TARGETS)
 
@@ -126,4 +139,15 @@ set_target_properties(${PROJECT_NAME} ${EXE_TARGETS} PROPERTIES
         CXX_STANDARD ${CMAKE_CXX_STANDARD}
         CXX_EXTENSIONS OFF
         CXX_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
+        CUDA_ARCHITECTURES "35;50;72"
 )
+if (ENABLE_GPU)
+    set_target_properties(${PROJECT_NAME}_GPU PROPERTIES
+            CXX_STANDARD ${CMAKE_CXX_STANDARD}
+            CXX_EXTENSIONS OFF
+            CXX_STANDARD_REQUIRED ON
+            CUDA_SEPARABLE_COMPILATION ON
+            CUDA_ARCHITECTURES "35;50;72"
+    )
+endif ()

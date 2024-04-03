@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "heu/library/algorithms/paillier_gpu/gpulib/error.h"
-#include "heu/library/algorithms/paillier_gpu/gpulib/gpu_paillier.h"
-#include "heu/library/algorithms/paillier_gpu/gpulib/gpupaillier.h"
+#include "error.h"
+#include "gpu_paillier.h"
+#include "gpupaillier.h"
 
 template <class params>
 __device__ __forceinline__ void paillier_t<params>::fixed_window_powm_odd(
