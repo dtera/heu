@@ -6,6 +6,7 @@ cd "$CD" || exit
 
 # build cgbn
 # [ -d cgbn ] || git clone https://github.com/NVlabs/CGBN.git
+# shellcheck disable=SC2154
 pkg=CGBN-"$cgbn_ver"
 download_url=https://github.com/NVlabs/CGBN/archive/"$cgbn_ver".tar.gz
 [ -f src/"$pkg".tar.gz ] || curl "$download_url" -L -o src/"$pkg".tar.gz
