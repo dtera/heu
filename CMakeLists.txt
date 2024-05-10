@@ -20,13 +20,16 @@ option(ENABLE_IPCL "whether enable ipcl" OFF)
 option(ENABLE_IC "whether enable ic" OFF)
 add_definitions(-DMSGPACK_NO_BOOST -DUSE_CMAKE -DNO_USE_MSGPACK)
 
-file(GLOB_RECURSE SRCS ${PROJECT_NAME}/library/*.cpp ${PROJECT_NAME}/library/*.cc ${PROJECT_NAME}/api/*.cc)
+file(GLOB_RECURSE SRCS ${PROJECT_NAME}/library/*.cpp ${PROJECT_NAME}/library/*.cc ${PROJECT_NAME}/api/*.cc
+        ${PROJECT_NAME}/algorithms/*.cpp ${PROJECT_NAME}/algorithms/*.cc
+        ${PROJECT_NAME}/spi/*.cpp ${PROJECT_NAME}/spi/*.cc)
 file(GLOB_RECURSE IPCL_SRCS ${PROJECT_NAME}/library/algorithms/paillier_ipcl/*.cc)
 file(GLOB_RECURSE GPU_SRCS ${PROJECT_NAME}/library/algorithms/paillier_gpu/*.cc
         ${PROJECT_NAME}/library/algorithms/paillier_gpu/gpulib/*.cu)
 file(GLOB_RECURSE PAILLIER_IC_SRCS ${PROJECT_NAME}/library/algorithms/paillier_ic/*.cc)
 file(GLOB_RECURSE NP_SRCS ${PROJECT_NAME}/library/numpy/*.cc)
-file(GLOB_RECURSE TEST_SRCS ${PROJECT_NAME}/library/*_test*.cc)
+file(GLOB_RECURSE TEST_SRCS ${PROJECT_NAME}/library/*_test*.cc
+        ${PROJECT_NAME}/spi/*_test*.cc ${PROJECT_NAME}/spi/test_*.cc)
 file(GLOB_RECURSE BENCH_SRCS ${PROJECT_NAME}/library/*_bench.cc)
 list(REMOVE_ITEM SRCS ${TEST_SRCS} ${BENCH_SRCS} ${NP_SRCS})
 list(REMOVE_ITEM GPU_SRCS ${TEST_SRCS} ${BENCH_SRCS} ${NP_SRCS})
@@ -78,6 +81,17 @@ endif ()
 include_directories(. include third_party/yacl third_party third_party/include)
 link_directories(third_party/lib)
 
+# Building tests
+include(FetchContent)
+FetchContent_Declare(
+        googletest
+        GIT_REPOSITORY https://github.com/google/googletest.git
+        GIT_TAG release-1.12.1
+)
+FetchContent_MakeAvailable(googletest)
+add_library(GTest::GTest INTERFACE IMPORTED)
+target_link_libraries(GTest::GTest INTERFACE GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main)
+
 set(ABSL_LIB absl_int128 absl_strings absl_symbolize absl_stacktrace absl_throw_delegate)
 set(GPU_LIB)
 if (ENABLE_GPU)
@@ -89,19 +103,8 @@ endif ()
 add_library(${PROJECT_NAME} SHARED ${SRCS})
 #target_sources(${PROJECT_NAME} PRIVATE)
 target_link_libraries(${PROJECT_NAME} yacl ${ABSL_LIB} ${GPU_LIB} # protobuf::libprotobuf protobuf::libprotobuf-lite
-        tommath fmt blake3 sodium curve25519 gmp)
+        tommath fmt blake3 sodium curve25519 gmp GTest::gtest GTest::gmock)
 set(EXE_TARGETS)
-
-# Building tests
-include(FetchContent)
-FetchContent_Declare(
-        googletest
-        GIT_REPOSITORY https://github.com/google/googletest.git
-        GIT_TAG release-1.12.1
-)
-FetchContent_MakeAvailable(googletest)
-add_library(GTest::GTest INTERFACE IMPORTED)
-target_link_libraries(GTest::GTest INTERFACE GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main)
 
 # Building bench
 foreach (bench_file ${BENCH_SRCS})
