@@ -13,7 +13,7 @@ using namespace seal_gpun;
 using std::complex;
 using std::vector;
 
-namespace troytest {
+namespace seal_gpu_test {
 
 class Timer {
  public:
@@ -468,19 +468,21 @@ class TimeTestBFVBGV : public TimeTest {
   }
 };
 
-}  // namespace troytest
+}  // namespace seal_gpu_test
 
 int main() {
   std::cout << "----- CKKS -----\n";
-  troytest::TimeTestCKKS test(16384, {60, 40, 40, 40, 40, 60});
+  seal_gpu_test::TimeTestCKKS test(16384, {60, 40, 40, 40, 40, 60});
   test.testAll();
 
   std::cout << "----- BFV -----\n";
-  troytest::TimeTestBFVBGV test2(false, 16384, 59, {60, 40, 40, 40, 40, 60});
+  seal_gpu_test::TimeTestBFVBGV test2(false, 16384, 59,
+                                      {60, 40, 40, 40, 40, 60});
   test2.testAll();
 
   std::cout << "----- BGV -----\n";
-  troytest::TimeTestBFVBGV test3(true, 16384, 20, {60, 40, 40, 40, 40, 60});
+  seal_gpu_test::TimeTestBFVBGV test3(true, 16384, 20,
+                                      {60, 40, 40, 40, 40, 60});
   test3.testAll();
   return 0;
 }
