@@ -33,7 +33,7 @@ namespace heu::spi::test {
 auto SelectHeKitsForTest(std::unordered_set<FeatureSet> groups)
     -> decltype(::testing::ValuesIn(std::vector<std::shared_ptr<HeKit>>()));
 
-std::string GenTestName(const std::shared_ptr<HeKit> &kit);
+[[maybe_unused]] std::string GenTestName(const std::shared_ptr<HeKit> &kit);
 
 template <typename TestClass>
 std::string GenTestName(

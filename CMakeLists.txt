@@ -1,6 +1,8 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.16)
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 cmake_policy(SET CMP0042 NEW)
 cmake_policy(SET CMP0104 NEW)
 if (APPLE)
@@ -12,8 +14,10 @@ else ()
     add_definitions(-DENABLE_GPAILLIER=true)
 
     find_package(CUDAToolkit REQUIRED)
+    set(CMAKE_CUDA_ARCHITECTURES 70 72 75 80 86)
     set(CMAKE_CUDA_STANDARD 17)
-    set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+    set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -O3")
+    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --std=c++17")
 endif ()
 
 option(ENABLE_IPCL "whether enable ipcl" OFF)
@@ -26,12 +30,13 @@ file(GLOB_RECURSE SRCS ${PROJECT_NAME}/library/*.cpp ${PROJECT_NAME}/library/*.c
 file(GLOB_RECURSE IPCL_SRCS ${PROJECT_NAME}/library/algorithms/paillier_ipcl/*.cc)
 file(GLOB_RECURSE GPU_SRCS ${PROJECT_NAME}/library/algorithms/paillier_gpu/*.cc
         ${PROJECT_NAME}/library/algorithms/paillier_gpu/gpulib/*.cu)
+file(GLOB_RECURSE SEAL_GPU_SRCS ${PROJECT_NAME}/library/algorithms/seal_gpu/*)
 file(GLOB_RECURSE PAILLIER_IC_SRCS ${PROJECT_NAME}/library/algorithms/paillier_ic/*.cc)
 file(GLOB_RECURSE NP_SRCS ${PROJECT_NAME}/library/numpy/*.cc)
 file(GLOB_RECURSE TEST_SRCS ${PROJECT_NAME}/library/*_test*.cc
         ${PROJECT_NAME}/spi/*_test*.cc ${PROJECT_NAME}/spi/test_*.cc)
 file(GLOB_RECURSE BENCH_SRCS ${PROJECT_NAME}/library/*_bench.cc)
-list(REMOVE_ITEM SRCS ${TEST_SRCS} ${BENCH_SRCS} ${NP_SRCS})
+list(REMOVE_ITEM SRCS ${TEST_SRCS} ${BENCH_SRCS} ${NP_SRCS} ${SEAL_GPU_SRCS})
 list(REMOVE_ITEM GPU_SRCS ${TEST_SRCS} ${BENCH_SRCS} ${NP_SRCS})
 list(REMOVE_ITEM TEST_SRCS ${NP_SRCS})
 list(REMOVE_ITEM BENCH_SRCS ${NP_SRCS})
@@ -92,11 +97,19 @@ FetchContent_MakeAvailable(googletest)
 add_library(GTest::GTest INTERFACE IMPORTED)
 target_link_libraries(GTest::GTest INTERFACE GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main)
 
+set(EXE_TARGETS)
 set(ABSL_LIB absl_int128 absl_strings absl_symbolize absl_stacktrace absl_throw_delegate)
 set(GPU_LIB)
 if (ENABLE_GPU)
     add_library(${PROJECT_NAME}_GPU SHARED ${GPU_SRCS})
-    target_link_libraries(${PROJECT_NAME}_GPU CUDA::cudart)
+    target_link_libraries(${PROJECT_NAME}_GPU)
+
+    add_subdirectory(heu/library/algorithms/seal_gpu)
+    add_executable(${PROJECT_NAME}_seal_gpu_bench)
+    target_sources(${PROJECT_NAME}_seal_gpu_bench PRIVATE heu/library/benchmark/algos/seal_gpu_bench.cu)
+    target_link_libraries(${PROJECT_NAME}_seal_gpu_bench seal_gpu)
+
+    list(APPEND EXE_TARGETS ${PROJECT_NAME}_seal_gpu_bench)
     list(APPEND GPU_LIB ${PROJECT_NAME}_GPU)
 endif ()
 # link libraries for the target
@@ -104,7 +117,6 @@ add_library(${PROJECT_NAME} SHARED ${SRCS})
 #target_sources(${PROJECT_NAME} PRIVATE)
 target_link_libraries(${PROJECT_NAME} yacl ${ABSL_LIB} ${GPU_LIB} # protobuf::libprotobuf protobuf::libprotobuf-lite
         tommath fmt blake3 sodium curve25519 gmp GTest::gtest GTest::gmock)
-set(EXE_TARGETS)
 
 # Building bench
 foreach (bench_file ${BENCH_SRCS})
@@ -142,8 +154,6 @@ set_target_properties(${PROJECT_NAME} ${EXE_TARGETS} PROPERTIES
         CXX_STANDARD ${CMAKE_CXX_STANDARD}
         CXX_EXTENSIONS OFF
         CXX_STANDARD_REQUIRED ON
-        CUDA_SEPARABLE_COMPILATION ON
-        CUDA_ARCHITECTURES "35;50;72"
 )
 if (ENABLE_GPU)
     set_target_properties(${PROJECT_NAME}_GPU PROPERTIES
@@ -151,6 +161,5 @@ if (ENABLE_GPU)
             CXX_EXTENSIONS OFF
             CXX_STANDARD_REQUIRED ON
             CUDA_SEPARABLE_COMPILATION ON
-            CUDA_ARCHITECTURES "35;50;72"
     )
 endif ()
