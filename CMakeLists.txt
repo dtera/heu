@@ -105,10 +105,10 @@ if (ENABLE_GPU)
     target_link_libraries(${PROJECT_NAME}_GPU)
 
     add_subdirectory(heu/library/algorithms/seal_gpu)
-    add_executable(${PROJECT_NAME}_seal_gpu_test heu/tests/seal_gpu_test.cu)
-    target_link_libraries(${PROJECT_NAME}_seal_gpu_test seal_gpu)
+    add_executable(${PROJECT_NAME}_seal_gpu_timetest heu/tests/seal_gpu_timetest.cu)
+    target_link_libraries(${PROJECT_NAME}_seal_gpu_timetest seal_gpu)
 
-    list(APPEND EXE_TARGETS ${PROJECT_NAME}_seal_gpu_test)
+    list(APPEND EXE_TARGETS ${PROJECT_NAME}_seal_gpu_timetest)
     list(APPEND GPU_LIB ${PROJECT_NAME}_GPU)
 endif ()
 # link libraries for the target
