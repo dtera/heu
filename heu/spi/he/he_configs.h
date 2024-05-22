@@ -108,6 +108,7 @@ DECLARE_ARG_string(Curve);
 //== Common args for mock_fhe / bfv / bgv / ckks ==//
 
 DECLARE_ARG_uint64(PolyModulusDegree);
+DECLARE_ARG(std::vector<int>, BitSizes);
 
 //== Spec args for mock_fhe ==//
 

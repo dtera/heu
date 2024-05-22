@@ -24,8 +24,8 @@ namespace heu::spi {
 // The feature set name of homomorphic encryption algorithms
 enum class FeatureSet {
   AdditivePHE,
-  WordFHE,    // include bfv, bgv, mock_bfv
-  ApproxFHE,  // include ckks, mock_ckks
+  WordFHE,    // include bfv, bgv, mock_bfv, gpu_bfv
+  ApproxFHE,  // include ckks, mock_ckks, gpu_ckks
 };
 
 enum class Schema {
@@ -43,6 +43,8 @@ enum class Schema {
   Bgv,
   Bfv,
   Ckks,
+  GPU_BFV,
+  GPU_CKKS,
 };
 
 inline const std::unordered_map<Schema, std::string> kSchema2String = {
@@ -60,6 +62,8 @@ inline const std::unordered_map<Schema, std::string> kSchema2String = {
     {Schema::Bgv, "bgv"},
     {Schema::Bfv, "bfv"},
     {Schema::Ckks, "ckks"},
+    {Schema::GPU_BFV, "gpu_bfv"},
+    {Schema::GPU_CKKS, "gpu_ckks"},
 };
 
 const std::set<Schema> &ListAllSchema();

@@ -9,34 +9,36 @@ if (APPLE)
     project(heu VERSION 1.0 LANGUAGES C CXX)
     option(ENABLE_GPU "whether enable gpu" OFF)
 else ()
+    set(CMAKE_CUDA_ARCHITECTURES 70 72 75 80 86)
     project(heu VERSION 1.0 LANGUAGES C CXX CUDA)
     option(ENABLE_GPU "whether enable gpu" ON)
     add_definitions(-DENABLE_GPAILLIER=true)
 
     find_package(CUDAToolkit REQUIRED)
-    set(CMAKE_CUDA_ARCHITECTURES 70 72 75 80 86)
     set(CMAKE_CUDA_STANDARD 17)
     set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -O3")
     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --std=c++17")
+    set(gcc_like_cxx "$<COMPILE_LANG_AND_ID:CXX,ARMClang,AppleClang,Clang,GNU>")
+    set(nvcc_cxx "$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>")
 endif ()
 
 option(ENABLE_IPCL "whether enable ipcl" OFF)
 option(ENABLE_IC "whether enable ic" OFF)
 add_definitions(-DMSGPACK_NO_BOOST -DUSE_CMAKE -DNO_USE_MSGPACK)
 
-file(GLOB_RECURSE SRCS ${PROJECT_NAME}/library/*.cpp ${PROJECT_NAME}/library/*.cc ${PROJECT_NAME}/api/*.cc
-        ${PROJECT_NAME}/algorithms/*.cpp ${PROJECT_NAME}/algorithms/*.cc
-        ${PROJECT_NAME}/spi/*.cpp ${PROJECT_NAME}/spi/*.cc)
-file(GLOB_RECURSE IPCL_SRCS ${PROJECT_NAME}/library/algorithms/paillier_ipcl/*.cc)
-file(GLOB_RECURSE GPU_SRCS ${PROJECT_NAME}/library/algorithms/paillier_gpu/*.cc
-        ${PROJECT_NAME}/library/algorithms/paillier_gpu/gpulib/*.cu)
-file(GLOB_RECURSE SEAL_GPU_SRCS ${PROJECT_NAME}/library/algorithms/seal_gpu/*)
-file(GLOB_RECURSE PAILLIER_IC_SRCS ${PROJECT_NAME}/library/algorithms/paillier_ic/*.cc)
-file(GLOB_RECURSE NP_SRCS ${PROJECT_NAME}/library/numpy/*.cc)
-file(GLOB_RECURSE TEST_SRCS ${PROJECT_NAME}/library/*_test*.cc
-        ${PROJECT_NAME}/spi/*_test*.cc ${PROJECT_NAME}/spi/test_*.cc)
-file(GLOB_RECURSE BENCH_SRCS ${PROJECT_NAME}/library/*_bench.cc)
-list(REMOVE_ITEM SRCS ${TEST_SRCS} ${BENCH_SRCS} ${NP_SRCS} ${SEAL_GPU_SRCS})
+file(GLOB_RECURSE SRCS ${PROJECT_NAME}/library/*.c* ${PROJECT_NAME}/algorithms/*.c* ${PROJECT_NAME}/spi/*.c*
+        ${PROJECT_NAME}/api/*.c*)
+file(GLOB_RECURSE IPCL_SRCS ${PROJECT_NAME}/library/algorithms/paillier_ipcl/*.c*)
+file(GLOB_RECURSE GPU_SRCS ${PROJECT_NAME}/library/algorithms/paillier_gpu/*.c*)
+file(GLOB_RECURSE PAILLIER_IC_SRCS ${PROJECT_NAME}/library/algorithms/paillier_ic/*.c*)
+file(GLOB_RECURSE NP_SRCS ${PROJECT_NAME}/library/numpy/*.c*)
+file(GLOB_RECURSE TEST_SRCS ${PROJECT_NAME}/library/*_test*.c* ${PROJECT_NAME}/spi/*test*.c*)
+file(GLOB_RECURSE BENCH_SRCS ${PROJECT_NAME}/library/*_bench.c*)
+file(GLOB_RECURSE SEAL_GPU_SRCS ${PROJECT_NAME}/library/algorithms/seal_gpu/*.c*)
+file(GLOB_RECURSE SEAL_FHE_GPU_SRCS ${PROJECT_NAME}/algorithms/seal_fhe/gpu/*.c*)
+file(GLOB_RECURSE RM_SRCS ${PROJECT_NAME}/algorithms/seal_fhe/*.c*)
+
+list(REMOVE_ITEM SRCS ${TEST_SRCS} ${BENCH_SRCS} ${NP_SRCS} ${SEAL_GPU_SRCS} ${SEAL_FHE_SRCS} ${RM_SRCS})
 list(REMOVE_ITEM GPU_SRCS ${TEST_SRCS} ${BENCH_SRCS} ${NP_SRCS})
 list(REMOVE_ITEM TEST_SRCS ${NP_SRCS})
 list(REMOVE_ITEM BENCH_SRCS ${NP_SRCS})
@@ -47,7 +49,6 @@ if (NOT ENABLE_IPCL)
     list(REMOVE_ITEM BENCH_SRCS ${IPCL_SRCS})
 endif ()
 if (NOT ENABLE_GPU)
-    list(REMOVE_ITEM SRCS ${GPU_SRCS})
     list(REMOVE_ITEM TEST_SRCS ${GPU_SRCS})
     list(REMOVE_ITEM BENCH_SRCS ${GPU_SRCS})
 endif ()
@@ -79,6 +80,7 @@ else ()
         message("OpenMP Found")
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+        set(COMPILE_OPTIONS --expt-extended-lambda -lineinfo --Werror all-warnings)
     endif ()
 endif ()
 
@@ -87,6 +89,7 @@ include_directories(. include third_party/yacl third_party third_party/include)
 link_directories(third_party/lib)
 
 # Building tests
+enable_testing()
 include(FetchContent)
 FetchContent_Declare(
         googletest
@@ -105,17 +108,23 @@ if (ENABLE_GPU)
     target_link_libraries(${PROJECT_NAME}_GPU)
 
     add_subdirectory(heu/library/algorithms/seal_gpu)
+
+    add_library(${PROJECT_NAME}_seal_fhe_gpu SHARED ${SEAL_FHE_GPU_SRCS})
+    target_link_libraries(${PROJECT_NAME}_seal_fhe_gpu seal_gpu)
+
     add_executable(${PROJECT_NAME}_seal_gpu_timetest heu/tests/seal_gpu_timetest.cu)
     target_link_libraries(${PROJECT_NAME}_seal_gpu_timetest seal_gpu)
 
     list(APPEND EXE_TARGETS ${PROJECT_NAME}_seal_gpu_timetest)
-    list(APPEND GPU_LIB ${PROJECT_NAME}_GPU)
+    #list(APPEND GPU_LIB ${PROJECT_NAME}_GPU)
 endif ()
-# link libraries for the target
+
+# add project lib
 add_library(${PROJECT_NAME} SHARED ${SRCS})
-#target_sources(${PROJECT_NAME} PRIVATE)
+# link libraries for the target
 target_link_libraries(${PROJECT_NAME} yacl ${ABSL_LIB} ${GPU_LIB} # protobuf::libprotobuf protobuf::libprotobuf-lite
         tommath fmt blake3 sodium curve25519 gmp GTest::gtest GTest::gmock)
+
 
 # Building bench
 foreach (bench_file ${BENCH_SRCS})
@@ -126,7 +135,6 @@ foreach (bench_file ${BENCH_SRCS})
     list(APPEND EXE_TARGETS ${PROJECT_NAME}_${bench_name})
 endforeach ()
 
-enable_testing()
 # Building test
 foreach (test_file ${TEST_SRCS})
     string(REPLACE ".cc" "" test_name ${test_file})
@@ -139,26 +147,17 @@ foreach (test_file ${TEST_SRCS})
 endforeach ()
 
 add_executable(${PROJECT_NAME}_tests ${PROJECT_NAME}/tests.cc)
-target_link_libraries(${PROJECT_NAME}_tests ${PROJECT_NAME}
-        GTest::GTest
-)
-file(GLOB TEST_SUITS ${PROJECT_NAME}/tests/*_test.cc)
+target_link_libraries(${PROJECT_NAME}_tests ${PROJECT_NAME} ${PROJECT_NAME}_seal_fhe_gpu GTest::GTest)
+file(GLOB TEST_SUITS ${PROJECT_NAME}/tests/*_test.c*)
 target_sources(${PROJECT_NAME}_tests PRIVATE ${TEST_SUITS})
 list(APPEND EXE_TARGETS ${PROJECT_NAME}_tests)
 
 foreach (target ${EXE_TARGETS})
     message("target: ${target}")
 endforeach ()
-set_target_properties(${PROJECT_NAME} ${EXE_TARGETS} PROPERTIES
+set_target_properties(${EXE_TARGETS} ${PROJECT_NAME} ${PROJECT_NAME}_GPU ${PROJECT_NAME}_seal_fhe_gpu PROPERTIES
         CXX_STANDARD ${CMAKE_CXX_STANDARD}
         CXX_EXTENSIONS OFF
         CXX_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
 )
-if (ENABLE_GPU)
-    set_target_properties(${PROJECT_NAME}_GPU PROPERTIES
-            CXX_STANDARD ${CMAKE_CXX_STANDARD}
-            CXX_EXTENSIONS OFF
-            CXX_STANDARD_REQUIRED ON
-            CUDA_SEPARABLE_COMPILATION ON
-    )
-endif ()
