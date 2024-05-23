@@ -106,56 +106,102 @@ void HeKit::Init(const seal_gpun::EncryptionParameters &params) {
 }
 
 //==========================fhe_gpu operation bigin==========================
-void HeKit::Encrypt(const int64_t m, seal_gpun::Ciphertext &out) {
-  seal_gpun::Plaintext pt;
-  ckks_encoder_->encode(m, pt);
-  encryptor_->encrypt(pt, out);
+void HeKit::Encode(const int64_t m, seal_gpun::Plaintext &out) {
+  ckks_encoder_->encode(m, out);
 }
 
-void HeKit::Encrypt(const double m, seal_gpun::Ciphertext &out) {
-  seal_gpun::Plaintext pt;
-  ckks_encoder_->encode(m, scale_, pt);
-  encryptor_->encrypt(pt, out);
+void HeKit::Encode(const double m, seal_gpun::Plaintext &out) {
+  ckks_encoder_->encode(m, scale_, out);
 }
 
-void HeKit::Encrypt(const std::vector<int64_t> &ms,
-                    std::vector<seal_gpun::Ciphertext> &out, bool async) {
+template <typename T,
+          typename std::enable_if_t<std::is_arithmetic_v<T>, int64_t>>
+void HeKit::Encode(const std::vector<T> &ms,
+                   std::vector<seal_gpun::Plaintext> &out, bool async,
+                   int32_t n_threads) {
   if (async) {
-    ParallelFor(ms.size(), omp_get_num_procs(),
-                [&](int i) { Encrypt(ms[i], out[i]); });
+    ParallelFor(ms.size(), n_threads, [&](int i) { Encode(ms[i], out[i]); });
   } else {
     for (int i = 0; i < ms.size(); i++) {
-      Encrypt(ms[i], out[i]);
+      Encode(ms[i], out[i]);
     }
   }
 }
 
-void HeKit::Encrypt(const std::vector<double> &ms,
-                    std::vector<seal_gpun::Ciphertext> &out, bool async) {
+void HeKit::Encrypt(const seal_gpun::Plaintext &pt,
+                    seal_gpun::Ciphertext &out) {
+  encryptor_->encrypt(pt, out);
+}
+
+template <typename T,
+          typename std::enable_if_t<std::is_arithmetic_v<T>, int64_t>>
+void HeKit::Encrypt(const T m, seal_gpun::Ciphertext &out) {
+  seal_gpun::Plaintext pt;
+  Encode(m, pt);
+  encryptor_->encrypt(pt, out);
+}
+
+template <typename T>
+void HeKit::Encrypt(const std::vector<T> &pts,
+                    std::vector<seal_gpun::Ciphertext> &out, bool async,
+                    int32_t n_threads) {
   if (async) {
-    ParallelFor(ms.size(), omp_get_num_procs(),
-                [&](int i) { Encrypt(ms[i], out[i]); });
+    ParallelFor(pts.size(), n_threads, [&](int i) { Encrypt(pts[i], out[i]); });
   } else {
-    for (int i = 0; i < ms.size(); i++) {
-      Encrypt(ms[i], out[i]);
+    for (int i = 0; i < pts.size(); i++) {
+      Encrypt(pts[i], out[i]);
     }
   }
 }
 
-int64_t HeKit::Decrypt(const seal_gpun::Ciphertext &ct) {
-  seal_gpun::Plaintext out;
+void HeKit::Decrypt(const seal_gpun::Ciphertext &ct,
+                    seal_gpun::Plaintext &out) {
   decryptor_->decrypt(ct, out);
-  return 0;
 }
 
 void HeKit::Decrypt(const std::vector<seal_gpun::Ciphertext> &cts,
-                    std::vector<int64_t> &out, bool async) {
+                    std::vector<seal_gpun::Plaintext> &out, bool async,
+                    int32_t n_threads) {
   if (async) {
-    ParallelFor(cts.size(), omp_get_num_procs(),
-                [&](int i) { out[i] = Decrypt(cts[i]); });
+    ParallelFor(cts.size(), n_threads, [&](int i) { Decrypt(cts[i], out[i]); });
   } else {
     for (int i = 0; i < cts.size(); i++) {
-      out[i] = Decrypt(cts[i]);
+      Decrypt(cts[i], out[i]);
+    }
+  }
+}
+
+void HeKit::Eval(
+    const std::vector<seal_gpun::Ciphertext> &cts1,
+    const std::vector<seal_gpun::Ciphertext> &cts2,
+    std::vector<seal_gpun::Ciphertext> &out,
+    std::function<void(const seal_gpun::Ciphertext &,
+                       const seal_gpun::Ciphertext &, seal_gpun::Ciphertext &)>
+        eval_func,
+    bool async, int32_t n_threads) {
+  auto len = cts1.size();
+  if (async) {
+    ParallelFor(len, n_threads,
+                [&](int i) { eval_func(cts1[i], cts2[i], out[i]); });
+  } else {
+    for (int i = 0; i < len; i++) {
+      eval_func(cts1[i], cts2[i], out[i]);
+    }
+  }
+}
+
+void HeKit::EvalInplace(
+    std::vector<seal_gpun::Ciphertext> &cts1,
+    const std::vector<seal_gpun::Ciphertext> &cts2,
+    std::function<void(seal_gpun::Ciphertext &, const seal_gpun::Ciphertext &)>
+        eval_func,
+    bool async, int32_t n_threads) {
+  auto len = cts1.size();
+  if (async) {
+    ParallelFor(len, n_threads, [&](int i) { eval_func(cts1[i], cts2[i]); });
+  } else {
+    for (int i = 0; i < len; i++) {
+      eval_func(cts1[i], cts2[i]);
     }
   }
 }
@@ -167,16 +213,12 @@ void HeKit::Add(const seal_gpun::Ciphertext &ct1,
 
 void HeKit::Add(const std::vector<seal_gpun::Ciphertext> &cts1,
                 const std::vector<seal_gpun::Ciphertext> &cts2,
-                std::vector<seal_gpun::Ciphertext> &out, bool async) {
-  auto len = cts1.size();
-  if (async) {
-    ParallelFor(len, omp_get_num_procs(),
-                [&](int i) { Add(cts1[i], cts2[i], out[i]); });
-  } else {
-    for (int i = 0; i < len; i++) {
-      Add(cts1[i], cts2[i], out[i]);
-    }
-  }
+                std::vector<seal_gpun::Ciphertext> &out, bool async,
+                int32_t n_threads) {
+  auto eval_func =
+      std::bind(&seal_gpun::Evaluator::add, evaluator_, std::placeholders::_1,
+                std::placeholders::_2, std::placeholders::_3);
+  Eval(cts1, cts2, out, eval_func, async, n_threads);
 }
 
 void HeKit::AddInplace(seal_gpun::Ciphertext &ct1,
@@ -186,16 +228,10 @@ void HeKit::AddInplace(seal_gpun::Ciphertext &ct1,
 
 void HeKit::AddInplace(std::vector<seal_gpun::Ciphertext> &cts1,
                        const std::vector<seal_gpun::Ciphertext> &cts2,
-                       bool async) {
-  auto len = cts1.size();
-  if (async) {
-    ParallelFor(len, omp_get_num_procs(),
-                [&](int i) { AddInplace(cts1[i], cts2[i]); });
-  } else {
-    for (int i = 0; i < len; i++) {
-      AddInplace(cts1[i], cts2[i]);
-    }
-  }
+                       bool async, int32_t n_threads) {
+  auto eval_func = std::bind(&seal_gpun::Evaluator::addInplace, evaluator_,
+                             std::placeholders::_1, std::placeholders::_2);
+  EvalInplace(cts1, cts2, eval_func, async, n_threads);
 }
 
 void HeKit::Sub(const seal_gpun::Ciphertext &ct1,
@@ -205,16 +241,12 @@ void HeKit::Sub(const seal_gpun::Ciphertext &ct1,
 
 void HeKit::Sub(const std::vector<seal_gpun::Ciphertext> &cts1,
                 const std::vector<seal_gpun::Ciphertext> &cts2,
-                std::vector<seal_gpun::Ciphertext> &out, bool async) {
-  auto len = cts1.size();
-  if (async) {
-    ParallelFor(len, omp_get_num_procs(),
-                [&](int i) { Sub(cts1[i], cts2[i], out[i]); });
-  } else {
-    for (int i = 0; i < len; i++) {
-      Sub(cts1[i], cts2[i], out[i]);
-    }
-  }
+                std::vector<seal_gpun::Ciphertext> &out, bool async,
+                int32_t n_threads) {
+  auto eval_func =
+      std::bind(&seal_gpun::Evaluator::sub, evaluator_, std::placeholders::_1,
+                std::placeholders::_2, std::placeholders::_3);
+  Eval(cts1, cts2, out, eval_func, async, n_threads);
 }
 
 void HeKit::SubInplace(seal_gpun::Ciphertext &ct1,
@@ -224,17 +256,30 @@ void HeKit::SubInplace(seal_gpun::Ciphertext &ct1,
 
 void HeKit::SubInplace(std::vector<seal_gpun::Ciphertext> &cts1,
                        const std::vector<seal_gpun::Ciphertext> &cts2,
-                       bool async) {
-  auto len = cts1.size();
-  if (async) {
-    ParallelFor(len, omp_get_num_procs(),
-                [&](int i) { SubInplace(cts1[i], cts2[i]); });
-  } else {
-    for (int i = 0; i < len; i++) {
-      SubInplace(cts1[i], cts2[i]);
-    }
-  }
+                       bool async, int32_t n_threads) {
+  auto eval_func = std::bind(&seal_gpun::Evaluator::subInplace, evaluator_,
+                             std::placeholders::_1, std::placeholders::_2);
+  EvalInplace(cts1, cts2, eval_func, async, n_threads);
 }
 
+template void HeKit::Encode(const std::vector<int64_t> &ms,
+                            std::vector<seal_gpun::Plaintext> &out, bool async,
+                            int32_t n_threads);
+template void HeKit::Encode(const std::vector<double> &ms,
+                            std::vector<seal_gpun::Plaintext> &out, bool async,
+                            int32_t n_threads);
+
+template void HeKit::Encrypt(const int64_t m, seal_gpun::Ciphertext &out);
+template void HeKit::Encrypt(const double m, seal_gpun::Ciphertext &out);
+
+template void HeKit::Encrypt(const std::vector<int64_t> &pts,
+                             std::vector<seal_gpun::Ciphertext> &out,
+                             bool async, int32_t n_threads);
+template void HeKit::Encrypt(const std::vector<double> &pts,
+                             std::vector<seal_gpun::Ciphertext> &out,
+                             bool async, int32_t n_threads);
+template void HeKit::Encrypt(const std::vector<seal_gpun::Plaintext> &pts,
+                             std::vector<seal_gpun::Ciphertext> &out,
+                             bool async, int32_t n_threads);
 //==========================fhe_gpu operation end============================
 }  // namespace heu::algos::seal_fhe::gpu

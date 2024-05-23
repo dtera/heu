@@ -59,38 +59,65 @@ class HeKit {
   }
 
   //==========================fhe_gpu operation bigin==========================
-  void Encrypt(const int64_t m, seal_gpun::Ciphertext &out);
-  void Encrypt(const double m, seal_gpun::Ciphertext &out);
-  void Encrypt(const std::vector<int64_t> &ms,
-               std::vector<seal_gpun::Ciphertext> &out, bool async = false);
-  void Encrypt(const std::vector<double> &ms,
-               std::vector<seal_gpun::Ciphertext> &out, bool async = false);
+  void Encode(const int64_t m, seal_gpun::Plaintext &out);
+  void Encode(const double m, seal_gpun::Plaintext &out);
+  template <typename T,
+            typename std::enable_if_t<std::is_arithmetic_v<T>, int64_t> = 0>
+  void Encode(const std::vector<T> &ms, std::vector<seal_gpun::Plaintext> &out,
+              bool async = false, int32_t n_threads = omp_get_num_procs());
 
-  int64_t Decrypt(const seal_gpun::Ciphertext &ct);
+  void Encrypt(const seal_gpun::Plaintext &pt, seal_gpun::Ciphertext &out);
+  template <typename T,
+            typename std::enable_if_t<std::is_arithmetic_v<T>, int64_t> = 0>
+  void Encrypt(const T m, seal_gpun::Ciphertext &out);
+  template <typename T>
+  void Encrypt(const std::vector<T> &pts,
+               std::vector<seal_gpun::Ciphertext> &out, bool async = false,
+               int32_t n_threads = omp_get_num_procs());
+
+  void Decrypt(const seal_gpun::Ciphertext &ct, seal_gpun::Plaintext &out);
   void Decrypt(const std::vector<seal_gpun::Ciphertext> &cts,
-               std::vector<int64_t> &out, bool async = false);
+               std::vector<seal_gpun::Plaintext> &out, bool async = false,
+               int32_t n_threads = omp_get_num_procs());
+
+  void Eval(const std::vector<seal_gpun::Ciphertext> &cts1,
+            const std::vector<seal_gpun::Ciphertext> &cts2,
+            std::vector<seal_gpun::Ciphertext> &out,
+            std::function<void(const seal_gpun::Ciphertext &,
+                               const seal_gpun::Ciphertext &,
+                               seal_gpun::Ciphertext &)>
+                eval_func,
+            bool async = false, int32_t n_threads = omp_get_num_procs());
+  void EvalInplace(std::vector<seal_gpun::Ciphertext> &cts1,
+                   const std::vector<seal_gpun::Ciphertext> &cts2,
+                   std::function<void(seal_gpun::Ciphertext &,
+                                      const seal_gpun::Ciphertext &)>
+                       eval_func,
+                   bool async = false, int32_t n_threads = omp_get_num_procs());
 
   void Add(const seal_gpun::Ciphertext &ct1, const seal_gpun::Ciphertext &ct2,
            seal_gpun::Ciphertext &out);
   void Add(const std::vector<seal_gpun::Ciphertext> &cts1,
            const std::vector<seal_gpun::Ciphertext> &cts2,
-           std::vector<seal_gpun::Ciphertext> &out, bool async = false);
+           std::vector<seal_gpun::Ciphertext> &out, bool async = false,
+           int32_t n_threads = omp_get_num_procs());
 
   void AddInplace(seal_gpun::Ciphertext &ct1, const seal_gpun::Ciphertext &ct2);
   void AddInplace(std::vector<seal_gpun::Ciphertext> &cts1,
                   const std::vector<seal_gpun::Ciphertext> &cts2,
-                  bool async = false);
+                  bool async = false, int32_t n_threads = omp_get_num_procs());
 
   void Sub(const seal_gpun::Ciphertext &ct1, const seal_gpun::Ciphertext &ct2,
            seal_gpun::Ciphertext &out);
   void Sub(const std::vector<seal_gpun::Ciphertext> &cts1,
            const std::vector<seal_gpun::Ciphertext> &cts2,
-           std::vector<seal_gpun::Ciphertext> &out, bool async = false);
+           std::vector<seal_gpun::Ciphertext> &out, bool async = false,
+           int32_t n_threads = omp_get_num_procs());
 
   void SubInplace(seal_gpun::Ciphertext &ct1, const seal_gpun::Ciphertext &ct2);
   void SubInplace(std::vector<seal_gpun::Ciphertext> &cts1,
                   const std::vector<seal_gpun::Ciphertext> &cts2,
-                  bool async = false);
+                  bool async = false, int32_t n_threads = omp_get_num_procs());
   //==========================fhe_gpu operation end============================
 
  private:

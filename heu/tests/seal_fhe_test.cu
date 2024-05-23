@@ -23,16 +23,26 @@ TEST(heu, seal_fhe_gpu) {
   std::cout << std::endl;
 
   std::vector<int64_t> ms1(iter), ms2(iter), res(iter);
+  std::vector<seal_gpun::Plaintext> pts1(iter), pts2(iter), pts(iter);
   std::vector<seal_gpun::Ciphertext> cts1(iter), cts2(iter), out(iter);
   for (int i = 0; i < iter; i++) {
     ms1[i] = i + 1;
     ms2[i] = i * 100 + 10;
   }
+
+  sw.Mark("HeKit::Encode1");
+  hekit->Encode(ms1, pts1);
+  sw.PrintWithMills("HeKit::Encode1");
+  sw.Mark("HeKit::Encode2");
+  hekit->Encode(ms2, pts2);
+  sw.PrintWithMills("HeKit::Encode2");
+  std::cout << std::endl;
+
   sw.Mark("HeKit::Encrypt1");
-  hekit->Encrypt(ms1, cts1, true);
+  hekit->Encrypt(pts1, cts1, true);
   sw.PrintWithMills("HeKit::Encrypt1");
   sw.Mark("HeKit::Encrypt2");
-  hekit->Encrypt(ms2, cts2, true);
+  hekit->Encrypt(pts2, cts2, true);
   sw.PrintWithMills("HeKit::Encrypt2");
   std::cout << std::endl;
 
@@ -51,7 +61,7 @@ TEST(heu, seal_fhe_gpu) {
   std::cout << std::endl;
 
   sw.Mark("HeKit::Decrypt");
-  hekit->Decrypt(out, res);
+  hekit->Decrypt(cts1, pts);
   sw.PrintWithMills("HeKit::Decrypt");
   std::cout << std::endl;
 }
