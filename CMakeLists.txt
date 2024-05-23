@@ -49,6 +49,7 @@ if (NOT ENABLE_IPCL)
     list(REMOVE_ITEM BENCH_SRCS ${IPCL_SRCS})
 endif ()
 if (NOT ENABLE_GPU)
+    list(REMOVE_ITEM SRCS ${GPU_SRCS})
     list(REMOVE_ITEM TEST_SRCS ${GPU_SRCS})
     list(REMOVE_ITEM BENCH_SRCS ${GPU_SRCS})
 endif ()
@@ -101,6 +102,7 @@ add_library(GTest::GTest INTERFACE IMPORTED)
 target_link_libraries(GTest::GTest INTERFACE GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main)
 
 set(EXE_TARGETS)
+set(LIB_TARGETS)
 set(ABSL_LIB absl_int128 absl_strings absl_symbolize absl_stacktrace absl_throw_delegate)
 set(GPU_LIB)
 if (ENABLE_GPU)
@@ -108,13 +110,13 @@ if (ENABLE_GPU)
     target_link_libraries(${PROJECT_NAME}_GPU)
 
     add_subdirectory(heu/library/algorithms/seal_gpu)
-
     add_library(${PROJECT_NAME}_seal_fhe_gpu SHARED ${SEAL_FHE_GPU_SRCS})
     target_link_libraries(${PROJECT_NAME}_seal_fhe_gpu seal_gpu)
 
     add_executable(${PROJECT_NAME}_seal_gpu_timetest heu/tests/seal_gpu_timetest.cu)
     target_link_libraries(${PROJECT_NAME}_seal_gpu_timetest seal_gpu)
 
+    list(APPEND LIB_TARGETS ${PROJECT_NAME}_GPU ${PROJECT_NAME}_seal_fhe_gpu)
     list(APPEND EXE_TARGETS ${PROJECT_NAME}_seal_gpu_timetest)
     #list(APPEND GPU_LIB ${PROJECT_NAME}_GPU)
 endif ()
@@ -124,7 +126,7 @@ add_library(${PROJECT_NAME} SHARED ${SRCS})
 # link libraries for the target
 target_link_libraries(${PROJECT_NAME} yacl ${ABSL_LIB} ${GPU_LIB} # protobuf::libprotobuf protobuf::libprotobuf-lite
         tommath fmt blake3 sodium curve25519 gmp GTest::gtest GTest::gmock)
-
+list(APPEND LIB_TARGETS ${PROJECT_NAME})
 
 # Building bench
 foreach (bench_file ${BENCH_SRCS})
@@ -155,7 +157,7 @@ list(APPEND EXE_TARGETS ${PROJECT_NAME}_tests)
 foreach (target ${EXE_TARGETS})
     message("target: ${target}")
 endforeach ()
-set_target_properties(${EXE_TARGETS} ${PROJECT_NAME} ${PROJECT_NAME}_GPU ${PROJECT_NAME}_seal_fhe_gpu PROPERTIES
+set_target_properties(${EXE_TARGETS} ${LIB_TARGETS} PROPERTIES
         CXX_STANDARD ${CMAKE_CXX_STANDARD}
         CXX_EXTENSIONS OFF
         CXX_STANDARD_REQUIRED ON
