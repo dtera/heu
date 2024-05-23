@@ -121,6 +121,11 @@ if (ENABLE_GPU)
     #list(APPEND GPU_LIB ${PROJECT_NAME}_GPU)
 endif ()
 
+#add seal_timetest
+add_executable(${PROJECT_NAME}_seal_timetest heu/tests/seal_timetest.cpp)
+target_link_libraries(${PROJECT_NAME}_seal_timetest seal)
+list(APPEND EXE_TARGETS ${PROJECT_NAME}_seal_timetest)
+
 # add project lib
 add_library(${PROJECT_NAME} SHARED ${SRCS})
 # link libraries for the target
