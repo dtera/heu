@@ -27,19 +27,20 @@ class HeKit {
       const seal_gpun::EncryptionParameters &params);
 
   static std::shared_ptr<HeKit> Create(const seal_gpun::SchemeType &scheme,
-                                       const uint64_t poly_modulus_degree,
+                                       const std::size_t poly_modulus_degree,
                                        const std::vector<int> &bit_sizes,
                                        const double scale = 1 << 6);
 
   static std::shared_ptr<HeKit> Create(const seal_gpun::SchemeType &scheme,
-                                       const uint64_t poly_modulus_degree,
+                                       const std::size_t poly_modulus_degree,
                                        const double scale = 1 << 6);
 
   HeKit(const seal_gpun::EncryptionParameters &params);
-  HeKit(const seal_gpun::SchemeType &scheme, const uint64_t poly_modulus_degree,
+  HeKit(const seal_gpun::SchemeType &scheme,
+        const std::size_t poly_modulus_degree,
         const std::vector<int> &bit_sizes, const double scale = 1 << 6);
-  HeKit(const seal_gpun::SchemeType &scheme, const uint64_t poly_modulus_degree,
-        const double scale = 1 << 6);
+  HeKit(const seal_gpun::SchemeType &scheme,
+        const std::size_t poly_modulus_degree, const double scale = 1 << 6);
   ~HeKit();
 
   std::string GetLibraryName() const;
@@ -58,13 +59,29 @@ class HeKit {
     return batch_encoder_;
   }
 
+  inline void SetScale(double scale) { this->scale_ = scale; }
+
+  inline const std::size_t SlotCount() const { return this->slot_count_; }
+
+  inline const std::size_t PolyModulusDegree() const {
+    return this->poly_modulus_degree_;
+  }
+
   //==========================fhe_gpu operation bigin==========================
   void Encode(const int64_t m, seal_gpun::Plaintext &out);
   void Encode(const double m, seal_gpun::Plaintext &out);
+  void Encode(const std::vector<double> &ms, seal_gpun::Plaintext &out);
+  void Encode(const std::vector<std::complex<double>> &ms,
+              seal_gpun::Plaintext &out);
   template <typename T,
             typename std::enable_if_t<std::is_arithmetic_v<T>, int64_t> = 0>
   void Encode(const std::vector<T> &ms, std::vector<seal_gpun::Plaintext> &out,
               bool async = false, int32_t n_threads = omp_get_num_procs());
+
+  double Decode(seal_gpun::Plaintext &pt);
+  void Decode(const seal_gpun::Plaintext &pt, std::vector<double> &out);
+  void Decode(const seal_gpun::Plaintext &pt,
+              std::vector<std::complex<double>> &out);
 
   void Encrypt(const seal_gpun::Plaintext &pt, seal_gpun::Ciphertext &out);
   template <typename T,
@@ -118,13 +135,27 @@ class HeKit {
   void SubInplace(std::vector<seal_gpun::Ciphertext> &cts1,
                   const std::vector<seal_gpun::Ciphertext> &cts2,
                   bool async = false, int32_t n_threads = omp_get_num_procs());
+
+  void Multiply(const seal_gpun::Ciphertext &ct1,
+                const seal_gpun::Ciphertext &ct2, seal_gpun::Ciphertext &out);
+  void MultiplyInplace(seal_gpun::Ciphertext &ct1,
+                       const seal_gpun::Ciphertext &ct2);
+
+  void MultiplyPlain(const seal_gpun::Ciphertext &ct,
+                     const seal_gpun::Plaintext &pt,
+                     seal_gpun::Ciphertext &out);
+  void MultiplyPlainInplace(seal_gpun::Ciphertext &ct,
+                            const seal_gpun::Plaintext &pt);
+
+  void RotateSum(seal_gpun::Ciphertext &ct);
   //==========================fhe_gpu operation end============================
 
  private:
   void Init(const seal_gpun::EncryptionParameters &params);
 
   double scale_;
-  double slot_count_;
+  std::size_t poly_modulus_degree_;
+  std::size_t slot_count_;
 
   seal_gpun::PublicKey pk_;
   seal_gpun::RelinKeys rlk_;
@@ -137,6 +168,7 @@ class HeKit {
   seal_gpun::Evaluator *evaluator_;
   seal_gpun::CKKSEncoder *ckks_encoder_;
   seal_gpun::BatchEncoder *batch_encoder_ = nullptr;
+  // std::variant<seal_gpun::CKKSEncoder*, seal_gpun::BatchEncoder*> encoder_;
 };
 
 }  // namespace heu::algos::seal_fhe::gpu

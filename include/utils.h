@@ -7,12 +7,24 @@
 
 #include <omp.h>
 
+#include <algorithm>
 #include <cassert>
 #include <chrono>
+#include <cstddef>
 #include <cstdint>
+#include <fstream>
 #include <functional>
+#include <iomanip>
 #include <iostream>
+#include <limits>
+#include <memory>
 #include <mutex>
+#include <numeric>
+#include <random>
+#include <sstream>
+#include <string>
+#include <thread>
+#include <vector>
 
 void repeat(
     std::function<void(int)> fn, std::size_t n,
@@ -277,4 +289,111 @@ void ParallelFor2d(const BlockedSpace2d &space, int nthreads, Func func) {
     });
   }
   exc.Rethrow();
+}
+
+template <class... Ts>
+struct overloaded : Ts... {
+  using Ts::operator()...;
+};
+template <class... Ts>
+overloaded(Ts...) -> overloaded<Ts...>;
+
+/*
+Helper function: Prints the name of the example in a fancy banner.
+*/
+inline void print_example_banner(std::string title) {
+  if (!title.empty()) {
+    std::size_t title_length = title.length();
+    std::size_t banner_length = title_length + 2 * 10;
+    std::string banner_top = "+" + std::string(banner_length - 2, '-') + "+";
+    std::string banner_middle =
+        "|" + std::string(9, ' ') + title + std::string(9, ' ') + "|";
+
+    std::cout << std::endl
+              << banner_top << std::endl
+              << banner_middle << std::endl
+              << banner_top << std::endl;
+  }
+}
+
+/*
+Helper function: Prints a vector of floating-point values.
+*/
+template <typename T>
+inline void print_vector(std::vector<T> vec, std::size_t print_size = 4,
+                         int prec = 3) {
+  /*
+  Save the formatting information for std::cout.
+  */
+  std::ios old_fmt(nullptr);
+  old_fmt.copyfmt(std::cout);
+
+  std::size_t slot_count = vec.size();
+
+  std::cout << std::fixed << std::setprecision(prec);
+  std::cout << std::endl;
+  if (slot_count <= 2 * print_size) {
+    std::cout << "    [";
+    for (std::size_t i = 0; i < slot_count; i++) {
+      std::cout << " " << vec[i] << ((i != slot_count - 1) ? "," : " ]\n");
+    }
+  } else {
+    vec.resize(std::max(vec.size(), 2 * print_size));
+    std::cout << "    [";
+    for (std::size_t i = 0; i < print_size; i++) {
+      std::cout << " " << vec[i] << ",";
+    }
+    if (vec.size() > 2 * print_size) {
+      std::cout << " ...,";
+    }
+    for (std::size_t i = slot_count - print_size; i < slot_count; i++) {
+      std::cout << " " << vec[i] << ((i != slot_count - 1) ? "," : " ]\n");
+    }
+  }
+  std::cout << std::endl;
+
+  /*
+  Restore the old std::cout formatting.
+  */
+  std::cout.copyfmt(old_fmt);
+}
+
+/*
+Helper function: Prints a matrix of values.
+*/
+template <typename T>
+inline void print_matrix(std::vector<T> matrix, std::size_t row_size) {
+  /*
+  We're not going to print every column of the matrix (there are 2048). Instead
+  print this many slots from beginning and end of the matrix.
+  */
+  std::size_t print_size = 5;
+
+  std::cout << std::endl;
+  std::cout << "    [";
+  for (std::size_t i = 0; i < print_size; i++) {
+    std::cout << std::setw(3) << std::right << matrix[i] << ",";
+  }
+  std::cout << std::setw(3) << " ...,";
+  for (std::size_t i = row_size - print_size; i < row_size; i++) {
+    std::cout << std::setw(3) << matrix[i]
+              << ((i != row_size - 1) ? "," : " ]\n");
+  }
+  std::cout << "    [";
+  for (std::size_t i = row_size; i < row_size + print_size; i++) {
+    std::cout << std::setw(3) << matrix[i] << ",";
+  }
+  std::cout << std::setw(3) << " ...,";
+  for (std::size_t i = 2 * row_size - print_size; i < 2 * row_size; i++) {
+    std::cout << std::setw(3) << matrix[i]
+              << ((i != 2 * row_size - 1) ? "," : " ]\n");
+  }
+  std::cout << std::endl;
+}
+
+/*
+Helper function: Print line number.
+*/
+inline void print_line(int line_number) {
+  std::cout << "Line " << std::setw(3) << line_number << " --> ";
 }

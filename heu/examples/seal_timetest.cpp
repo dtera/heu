@@ -1,5 +1,4 @@
 
-#include <seal/seal.h>
 #include <sys/time.h>
 
 #include <cassert>
@@ -9,6 +8,8 @@
 #include <map>
 #include <string>
 #include <vector>
+
+#include "third_party/include/seal/seal.h"
 
 using std::complex;
 using std::vector;

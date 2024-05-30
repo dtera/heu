@@ -36,6 +36,7 @@ file(GLOB_RECURSE TEST_SRCS ${PROJECT_NAME}/library/*_test*.c* ${PROJECT_NAME}/s
 file(GLOB_RECURSE BENCH_SRCS ${PROJECT_NAME}/library/*_bench.c*)
 file(GLOB_RECURSE SEAL_GPU_SRCS ${PROJECT_NAME}/library/algorithms/seal_gpu/*.c*)
 file(GLOB_RECURSE SEAL_FHE_GPU_SRCS ${PROJECT_NAME}/algorithms/seal_fhe/gpu/*.c*)
+file(GLOB_RECURSE EXAMPLES_SRCS ${PROJECT_NAME}/examples/*.c*)
 file(GLOB_RECURSE RM_SRCS ${PROJECT_NAME}/algorithms/seal_fhe/*.c*)
 
 list(REMOVE_ITEM SRCS ${TEST_SRCS} ${BENCH_SRCS} ${NP_SRCS} ${SEAL_GPU_SRCS} ${SEAL_FHE_SRCS} ${RM_SRCS})
@@ -113,18 +114,9 @@ if (ENABLE_GPU)
     add_library(${PROJECT_NAME}_seal_fhe_gpu SHARED ${SEAL_FHE_GPU_SRCS})
     target_link_libraries(${PROJECT_NAME}_seal_fhe_gpu seal_gpu)
 
-    add_executable(${PROJECT_NAME}_seal_gpu_timetest heu/tests/seal_gpu_timetest.cu)
-    target_link_libraries(${PROJECT_NAME}_seal_gpu_timetest seal_gpu)
-
     list(APPEND LIB_TARGETS ${PROJECT_NAME}_GPU ${PROJECT_NAME}_seal_fhe_gpu)
-    list(APPEND EXE_TARGETS ${PROJECT_NAME}_seal_gpu_timetest)
     #list(APPEND GPU_LIB ${PROJECT_NAME}_GPU)
 endif ()
-
-#add seal_timetest
-add_executable(${PROJECT_NAME}_seal_timetest heu/tests/seal_timetest.cpp)
-target_link_libraries(${PROJECT_NAME}_seal_timetest seal)
-list(APPEND EXE_TARGETS ${PROJECT_NAME}_seal_timetest)
 
 # add project lib
 add_library(${PROJECT_NAME} SHARED ${SRCS})
@@ -132,6 +124,17 @@ add_library(${PROJECT_NAME} SHARED ${SRCS})
 target_link_libraries(${PROJECT_NAME} yacl ${ABSL_LIB} ${GPU_LIB} # protobuf::libprotobuf protobuf::libprotobuf-lite
         tommath fmt blake3 sodium curve25519 gmp GTest::gtest GTest::gmock)
 list(APPEND LIB_TARGETS ${PROJECT_NAME})
+
+# Building examples
+foreach (examples_file ${EXAMPLES_SRCS})
+    if (NOT ${examples_file} MATCHES ".*\.cu" OR ENABLE_GPU)
+        string(REGEX REPLACE "(.cc)|(.cpp)|(.cu)" "" examples_name ${examples_file})
+        string(REGEX REPLACE "(.*)?/" "" examples_name ${examples_name})
+        add_executable(${PROJECT_NAME}_${examples_name} ${examples_file})
+        target_link_libraries(${PROJECT_NAME}_${examples_name} ${PROJECT_NAME} seal seal_gpu)
+        list(APPEND EXE_TARGETS ${PROJECT_NAME}_${examples_name})
+    endif ()
+endforeach ()
 
 # Building bench
 foreach (bench_file ${BENCH_SRCS})
