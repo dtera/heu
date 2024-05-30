@@ -16,3 +16,4 @@ sh "$CD"/build_template.sh --pkg "$pkg" -u "$download_url" -o \
 mv "$CD"/lib64/libseal* "$CD"/lib/ && rm -rf "$CD"/lib64
 m_ver=${seal_ver%.*}
 rm -rf "$CD"/include/seal && mv "$CD"/include/SEAL-"$m_ver"/seal "$CD"/include/ && rm -rf "$CD"/include/SEAL-"$m_ver"
+rm -rf "$CD"/lib/{cmake,pkgconfig}
