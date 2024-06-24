@@ -13,7 +13,7 @@ sh "$CD"/build_template.sh --pkg "$pkg" -u "$download_url" -o \
 "-DSEAL_USE_MSGSL=OFF -DSEAL_BUILD_DEPS=OFF -DSEAL_USE_ZSTD=OFF -DSEAL_USE_ZLIB=OFF -DSEAL_THROW_ON_TRANSPARENT_CIPHERTEXT=OFF"
 
 # shellcheck disable=SC2115
-mv "$CD"/lib64/libseal* "$CD"/lib/ && rm -rf "$CD"/lib64
+[ -d "$CD"/lib64 ] && mv "$CD"/lib64/libseal* "$CD"/lib/ && rm -rf "$CD"/lib64
 m_ver=${seal_ver%.*}
 rm -rf "$CD"/include/seal && mv "$CD"/include/SEAL-"$m_ver"/seal "$CD"/include/ && rm -rf "$CD"/include/SEAL-"$m_ver"
 rm -rf "$CD"/lib/{cmake,pkgconfig}

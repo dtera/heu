@@ -11,6 +11,8 @@ rm -rf include lib && mkdir include lib
 "$CD"/build_gmp.sh "$PREFIX"
 # build yacl
 "$CD"/build_yacl.sh "$PREFIX"
+# build seal
+"$CD"/build_seal.sh
 # patches
 "$CD"/patches.sh
 
