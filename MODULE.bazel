@@ -25,6 +25,7 @@ module(
     compatibility_level = 1,
 )
 
+bazel_dep(name = "apple_support", version = "1.17.1")
 bazel_dep(name = "yacl", version = "0.4.5b10-nightly-20241224")
 bazel_dep(name = "seal", version = "3.6.6")
 bazel_dep(name = "spdlog", version = "1.14.1")
@@ -44,6 +45,7 @@ bazel_dep(name = "platforms", version = "0.0.8")
 bazel_dep(name = "pailliercryptolib", version = "2.0.0-20231102-fdc2135")
 bazel_dep(name = "org_interconnection", version = "0.0.1")
 bazel_dep(name = "eigen", version = "3.4.90-20230801-66e8f3")
+bazel_dep(name = "com_dtera_libtommath", version = "20250114-42b3fb0")
 
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 python.toolchain(
