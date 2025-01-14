@@ -63,7 +63,7 @@ yacl_cc_library(
     hdrs = ["secret_key.h"],
     deps = [
         "//heu/library/algorithms/util",
-        "@com_github_msgpack_msgpack//:msgpack",
+        "@msgpack-c//:msgpack",
     ],
 )
 
@@ -73,7 +73,7 @@ yacl_cc_library(
     hdrs = ["public_key.h"],
     deps = [
         "//heu/library/algorithms/util",
-        "@com_github_msgpack_msgpack//:msgpack",
+        "@msgpack-c//:msgpack",
     ],
 )
 
@@ -82,7 +82,7 @@ yacl_cc_library(
     hdrs = ["ciphertext.h"],
     deps = [
         "//heu/library/algorithms/util",
-        "@com_github_msgpack_msgpack//:msgpack",
+        "@msgpack-c//:msgpack",
     ],
 )
 
