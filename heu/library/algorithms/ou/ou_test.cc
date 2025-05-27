@@ -11,7 +11,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
 
 #include "heu/library/algorithms/ou/ou.h"
 
@@ -23,9 +22,7 @@ namespace heu::lib::algorithms::ou::test {
 
 class OUTest : public testing::Test {
  protected:
-  [[maybe_unused]] static void SetUpTestSuite() {
-    KeyGenerator::Generate(2048, &sk_, &pk_);
-  }
+  static void SetUpTestSuite() { KeyGenerator::Generate(2048, &sk_, &pk_); }
 
   static SecretKey sk_;
   static PublicKey pk_;
@@ -257,7 +254,7 @@ TEST_P(BigNumberTest, SubTest) {
   evaluator.SubInplace(&x_encrypted, r_mp);
   BigInt raw;
   decryptor.Decrypt(x_encrypted, &raw);
-  auto share_b = raw.Get<int64_t>();
+  int64_t share_b = raw.Get<int64_t>();
 
   EXPECT_EQ(share_a + share_b, x);
 }

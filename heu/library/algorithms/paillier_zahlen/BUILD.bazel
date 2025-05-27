@@ -21,32 +21,6 @@ test_suite(
 )
 
 yacl_cc_library(
-    name = "paillier_zahlen_all",
-    srcs = [
-        "decryptor.cc",
-        "encryptor.cc",
-        "evaluator.cc",
-        "key_generator.cc",
-        "public_key.cc",
-        "secret_key.cc",
-    ],
-    hdrs = [
-        "ciphertext.h",
-        "decryptor.h",
-        "encryptor.h",
-        "evaluator.h",
-        "key_generator.h",
-        "paillier.h",
-        "public_key.h",
-        "secret_key.h",
-    ],
-    deps = [
-        "//heu/library/algorithms/util",
-        "@com_github_msgpack_msgpack//:msgpack",
-    ],
-)
-
-yacl_cc_library(
     name = "paillier_zahlen",
     hdrs = ["paillier.h"],
     deps = [
@@ -144,6 +118,6 @@ yacl_cc_test(
     name = "paillier_test",
     srcs = ["paillier_test.cc"],
     deps = [
-        ":paillier_zahlen_all",
+        ":paillier_zahlen",
     ],
 )

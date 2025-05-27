@@ -17,29 +17,6 @@ load("@yacl//bazel:yacl.bzl", "yacl_cc_library", "yacl_cc_test")
 package(default_visibility = ["//visibility:public"])
 
 yacl_cc_library(
-    name = "base_all",
-    srcs = [
-        "plaintext.cc",
-        "schema.cc",
-        "serializable_types.cc",
-    ],
-    hdrs = [
-        "plaintext.h",
-        "predefined_functions.h",
-        "schema.h",
-        "serializable_types.h",
-        "variant_helper.h",
-    ],
-    deps = [
-        "//heu/library/algorithms/mock",
-        "//heu/library/algorithms/ou",
-        "//heu/library/algorithms/paillier_float",
-        "//heu/library/algorithms/paillier_zahlen",
-        "//heu/library/algorithms/paillier_ipcl",
-    ],
-)
-
-yacl_cc_library(
     name = "base",
     deps = [
         ":key_def",
@@ -116,6 +93,7 @@ yacl_cc_test(
     name = "schema_test",
     srcs = ["schema_test.cc"],
     deps = [
-        ":base_all",
+        ":schema",
+        ":serializable_types",
     ],
 )

@@ -81,28 +81,6 @@ HeKit::HeKit(SchemaType schema_type) {
   Setup(std::move(pk), std::move(sk));
 }
 
-/*#define PK_SK_INIT(ns) \
-  [&](ns::PublicKey& pk) {                                                     \
-    ns::SecretKey sk;                                                          \
-    sk.Deserialize(sk_buffer);                                                 \
-                                                                               \
-    encryptor_ = std::make_shared<Encryptor>(schema_type_, ns::Encryptor(pk)); \
-    decryptor_ =                                                               \
-        std::make_shared<Decryptor>(schema_type_, ns::Decryptor(pk, sk));      \
-    evaluator_ = std::make_shared<Evaluator>(schema_type_, ns::Evaluator(pk)); \
-    return std::make_shared<SecretKey>(std::move(sk));                         \
-  }
-
-HeKit::HeKit(yacl::ByteContainerView pk_buffer,
-             yacl::ByteContainerView sk_buffer) {
-  auto pk = std::make_shared<PublicKey>();
-  pk->Deserialize(pk_buffer);
-  HeKitPublicBase::Setup(std::move(pk));
-  auto sk = public_key_->Visit(
-      HE_DISPATCH_RET(std::shared_ptr<SecretKey>, PK_SK_INIT));
-  secret_key_ = std::move(sk);
-}*/
-
 #define HE_SPECIAL_SETUP_BY_PK(ns)                                     \
   [&](const ns::PublicKey &pk1) {                                      \
     evaluator_ =                                                       \

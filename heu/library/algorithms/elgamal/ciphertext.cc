@@ -58,8 +58,12 @@ void Ciphertext::EnableEcGroup(
   kEcGroupCache.try_emplace(HashEcGroup(curve), curve);
 }
 
-yacl::Buffer Ciphertext::Serialize(bool with_meta) const {
-#if USE_MSGPACK == 1
+yacl::Buffer Ciphertext::Serialize(
+#ifndef NO_USE_MSGPACK
+    bool with_meta
+#endif
+) const {
+#ifndef NO_USE_MSGPACK
   msgpack::sbuffer buffer;
   msgpack::packer<msgpack::sbuffer> o(buffer);
 
@@ -74,7 +78,7 @@ yacl::Buffer Ciphertext::Serialize(bool with_meta) const {
   o.pack(std::string_view(ec->SerializePoint(c2)));
 
   auto sz = buffer.size();
-  return {buffer.release(), sz, [](void* ptr) { free(ptr); }};
+  return {buffer.release(), sz, [](void *ptr) { free(ptr); }};
 #else
   auto ca1 = std::get<yacl::crypto::Array160>(c1);
   auto ca2 = std::get<yacl::crypto::Array160>(c2);

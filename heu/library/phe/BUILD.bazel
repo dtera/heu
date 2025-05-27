@@ -17,27 +17,6 @@ load("@yacl//bazel:yacl.bzl", "yacl_cc_library", "yacl_cc_test")
 package(default_visibility = ["//visibility:public"])
 
 yacl_cc_library(
-    name = "phe_all",
-    srcs = [
-        "decryptor.cc",
-        "encryptor.cc",
-        "evaluator.cc",
-        "phe.cc",
-    ],
-    hdrs = [
-        "decryptor.h",
-        "encryptor.h",
-        "evaluator.h",
-        "key_def.h",
-        "phe.h",
-    ],
-    deps = [
-        "//heu/library/phe/base",
-        "//heu/library/phe/encoding",
-    ],
-)
-
-yacl_cc_library(
     name = "phe",
     srcs = ["phe.cc"],
     hdrs = ["phe.h"],

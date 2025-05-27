@@ -21,31 +21,6 @@ test_suite(
 )
 
 yacl_cc_library(
-    name = "ou_all",
-    srcs = [
-        "decryptor.cc",
-        "encryptor.cc",
-        "evaluator.cc",
-        "key_generator.cc",
-        "public_key.cc",
-    ],
-    hdrs = [
-        "ciphertext.h",
-        "decryptor.h",
-        "encryptor.h",
-        "evaluator.h",
-        "key_generator.h",
-        "ou.h",
-        "public_key.h",
-        "secret_key.h",
-    ],
-    deps = [
-        "//heu/library/algorithms/util",
-        "@com_github_msgpack_msgpack//:msgpack",
-    ],
-)
-
-yacl_cc_library(
     name = "ou",
     hdrs = [
         "ou.h",
@@ -159,6 +134,6 @@ yacl_cc_test(
     name = "ou_test",
     srcs = ["ou_test.cc"],
     deps = [
-        ":ou_all",
+        ":ou",
     ],
 )
